@@ -6,13 +6,13 @@ const previews = [
     name: "Glow Salon & Spa",
     detail: "Hydra Facial Glow · 60 min",
     price: "₹1,500",
-    href: "/glow-salon",
+    href: "/glow-salon-spa",
   },
   {
     name: "Beatz Dance Studio",
     detail: "Beginner Hip Hop · Mon, Wed, Fri",
     price: "₹2,500",
-    href: "/beatz-dance",
+    href: "/beatz-dance-studio",
   },
   {
     name: "Sweet Crumbs",
@@ -61,7 +61,7 @@ export default function Home() {
             Explore booking modes
           </h2>
           <span className="flex items-center gap-2 text-sm text-[var(--muted)]">
-            <CalendarDays aria-hidden="true" size={17} /> Live availability soon
+            <CalendarDays aria-hidden="true" size={17} /> Live availability
           </span>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
@@ -94,4 +94,3 @@ export default function Home() {
     </main>
   );
 }
-
