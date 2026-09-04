@@ -1,0 +1,2 @@
+"""Take-India backend application."""
+
