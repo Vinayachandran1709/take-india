@@ -1,7 +1,9 @@
 from functools import lru_cache
+from typing import Annotated
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, SecretStr, field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -17,11 +19,14 @@ class Settings(BaseSettings):
     test_database_url: str | None = None
     allow_test_database_reset: bool = False
 
-    jwt_secret_key: str | None = None
+    jwt_secret_key: SecretStr | None = None
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = Field(default=60, gt=0)
 
-    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    cors_origins: Annotated[list[str], NoDecode] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ]
     app_timezone: str = "Asia/Kolkata"
     booking_hold_minutes: int = Field(default=10, gt=0)
 
@@ -32,8 +37,16 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
 
+    @field_validator("app_timezone")
+    @classmethod
+    def validate_timezone(cls, value: str) -> str:
+        try:
+            ZoneInfo(value)
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError("APP_TIMEZONE must be a valid IANA timezone") from exc
+        return value
+
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-
