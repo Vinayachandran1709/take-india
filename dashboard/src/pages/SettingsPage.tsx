@@ -1,0 +1,19 @@
+import { Save } from 'lucide-react'
+import { type FormEvent, useEffect, useState } from 'react'
+
+import { api, errorMessage } from '../lib/api'
+import type { Merchant, OperatingHour } from '../lib/types'
+
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const defaultHours: OperatingHour[] = dayNames.map((_, day) => ({ day_of_week: day, open_time: '09:00', close_time: '18:00', is_closed: day === 0 }))
+
+export function SettingsPage() {
+  const [merchant, setMerchant] = useState<Merchant | null>(null)
+  const [hours, setHours] = useState<OperatingHour[]>(defaultHours)
+  const [message, setMessage] = useState('')
+  useEffect(() => { void Promise.all([api.get<Merchant>('/merchant/me'), api.get<OperatingHour[]>('/operating-hours')]).then(([me, schedule]) => { setMerchant(me.data); if (schedule.data.length) setHours(defaultHours.map((fallback) => schedule.data.find((item) => item.day_of_week === fallback.day_of_week) ?? fallback)) }) }, [])
+  if (!merchant) return <p>Loading settings…</p>
+  async function saveProfile(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); try { const { data } = await api.patch<Merchant>('/merchant/me', { business_name: form.get('business_name'), owner_name: form.get('owner_name'), phone_number: form.get('phone_number'), address: form.get('address') || null, timezone: form.get('timezone') }); setMerchant(data); setMessage('Profile saved.') } catch (error) { setMessage(errorMessage(error)) } }
+  async function saveHours() { try { const { data } = await api.put<OperatingHour[]>('/operating-hours', { days: hours.map(({ day_of_week, open_time, close_time, is_closed }) => ({ day_of_week, open_time: is_closed ? null : open_time, close_time: is_closed ? null : close_time, is_closed })) }); setHours(data); setMessage('Operating hours saved.') } catch (error) { setMessage(errorMessage(error)) } }
+  return <div className="mx-auto max-w-5xl"><h1 className="text-3xl font-bold tracking-tight">Business settings</h1><p className="mt-2 text-[#68756e]">Merchant-local times use {merchant.timezone}.</p><div className="mt-8 grid gap-7 xl:grid-cols-2"><section className="panel"><h2>Profile</h2><form onSubmit={saveProfile} className="mt-5 grid gap-4"><label>Business name<input name="business_name" defaultValue={merchant.business_name} /></label><label>Owner name<input name="owner_name" defaultValue={merchant.owner_name} /></label><label>Phone<input name="phone_number" defaultValue={merchant.phone_number} /></label><label>Address<textarea name="address" rows={3} defaultValue={merchant.address ?? ''} /></label><label>Timezone<input name="timezone" defaultValue={merchant.timezone} /></label><button className="primary"><Save size={17} /> Save profile</button></form></section><section className="panel"><h2>Weekly operating hours</h2><div className="mt-5 space-y-3">{hours.map((row, index) => <div key={row.day_of_week} className="grid grid-cols-[90px_1fr_1fr] items-center gap-2"><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={!row.is_closed} onChange={(event) => setHours(hours.map((item, itemIndex) => itemIndex === index ? { ...item, is_closed: !event.target.checked } : item))} />{dayNames[row.day_of_week]}</label><input disabled={row.is_closed} type="time" value={row.open_time ?? '09:00'} onChange={(event) => setHours(hours.map((item, itemIndex) => itemIndex === index ? { ...item, open_time: event.target.value } : item))} /><input disabled={row.is_closed} type="time" value={row.close_time ?? '18:00'} onChange={(event) => setHours(hours.map((item, itemIndex) => itemIndex === index ? { ...item, close_time: event.target.value } : item))} /></div>)}</div><button onClick={() => void saveHours()} className="primary mt-5"><Save size={17} /> Save hours</button></section></div>{message && <p className="mt-5 rounded-xl bg-white p-4 text-sm">{message}</p>}</div>
+}

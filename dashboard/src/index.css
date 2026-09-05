@@ -20,3 +20,22 @@ body {
   min-height: 100svh;
 }
 
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+label { display: block; font-size: 0.875rem; font-weight: 600; color: #27372f; }
+label > input:not([type='checkbox']), label > select, label > textarea,
+form > input, form > select {
+  display: block; width: 100%; margin-top: 0.45rem; border: 1px solid #ccd8d1;
+  border-radius: 0.75rem; background: white; padding: 0.72rem 0.85rem; outline: none;
+}
+label > input:focus, label > select:focus, label > textarea:focus { border-color: #176848; box-shadow: 0 0 0 3px rgb(23 104 72 / 0.1); }
+.panel { border: 1px solid #dce4df; border-radius: 1.5rem; background: white; padding: 1.5rem; box-shadow: 0 8px 28px rgb(18 60 45 / 0.05); }
+.panel h2 { font-size: 1.15rem; font-weight: 750; }
+.primary, .secondary { display: flex; min-height: 2.85rem; align-items: center; justify-content: center; gap: 0.45rem; border-radius: 0.75rem; padding: 0.65rem 1rem; font-size: 0.875rem; font-weight: 700; }
+.primary { background: #176848; color: white; }
+.secondary { border: 1px solid #ccd8d1; background: white; color: #176848; }
+.icon-button { display: grid; place-items: center; border-radius: 0.65rem; padding: 0.55rem; color: #68756e; }
+.icon-button:hover { background: #edf3ef; color: #176848; }
+.tag { border-radius: 999px; background: #edf6f1; padding: 0.3rem 0.6rem; font-size: 0.68rem; font-weight: 700; color: #176848; }
+.chip { display: inline-flex; align-items: center; gap: 0.45rem; border-radius: 999px; background: #f0f4f1; padding: 0.5rem 0.75rem; font-size: 0.78rem; font-weight: 650; }
