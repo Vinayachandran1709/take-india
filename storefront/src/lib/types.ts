@@ -60,6 +60,7 @@ export type Availability = {
 };
 
 export type BookingResult = {
+  public_booking_token: string;
   booking_reference: string;
   booking_status: "PENDING_PAYMENT";
   payment_status: "PENDING";

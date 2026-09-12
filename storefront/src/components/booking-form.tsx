@@ -129,8 +129,12 @@ export function BookingForm({ slug, service }: { slug: string; service: Service 
           <div><dt className="text-[var(--muted)]">Hold expires</dt><dd className="mt-1 font-semibold">{new Date(result.hold_expires_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</dd></div>
         </dl>
         <p className="mt-6 rounded-2xl bg-white p-4 text-sm leading-6 text-[var(--muted)]">
-          Payment will be connected in Phase 2. This is an unpaid temporary hold.
+          Complete your Test Mode payment before the hold expires to confirm your booking.
         </p>
+        <a className="mt-5 inline-block rounded-xl bg-[var(--brand)] px-5 py-3 font-bold text-white"
+          href={`/booking/${encodeURIComponent(result.booking_reference)}#${encodeURIComponent(result.public_booking_token)}`}>
+          Continue to payment
+        </a>
       </section>
     );
   }

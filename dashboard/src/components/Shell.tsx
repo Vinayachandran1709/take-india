@@ -9,6 +9,7 @@ const links = [
   { to: '/dashboard/services', label: 'Services', icon: Store },
   { to: '/dashboard/schedules', label: 'Schedules', icon: CalendarRange },
   { to: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { to: '/dashboard/payments', label: 'Test payments', icon: Store },
 ]
 
 export function Shell({ children }: { children: ReactNode }) {
