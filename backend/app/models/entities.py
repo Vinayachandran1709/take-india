@@ -282,6 +282,7 @@ class Booking(TimestampMixin, Base):
             name="fk_bookings_batch_tenant",
         ),
         UniqueConstraint("booking_reference", name="uq_bookings_reference"),
+        UniqueConstraint("id", "merchant_id", name="uq_booking_id_merchant"),
         CheckConstraint("start_time < end_time", name="valid_interval"),
         CheckConstraint("total_amount >= 0", name="total_nonnegative"),
         CheckConstraint("amount_to_pay >= 0", name="payable_nonnegative"),
@@ -321,3 +322,14 @@ class Booking(TimestampMixin, Base):
     hold_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     razorpay_order_id: Mapped[str | None] = mapped_column(String(255))
     razorpay_payment_id: Mapped[str | None] = mapped_column(String(255))
+    public_token_hash: Mapped[str | None] = mapped_column(String(64))
+    amount_paid: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0"), server_default="0"
+    )
+    payment_review_required: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
+
+    @property
+    def balance_due(self) -> Decimal:
+        return max(self.total_amount - self.amount_paid, Decimal("0"))

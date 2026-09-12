@@ -354,6 +354,7 @@ class BookingInitiateRequest(ApiModel):
 
 
 class BookingInitiateResponse(ApiModel):
+    public_booking_token: str | None = None
     booking_reference: str
     booking_status: str
     payment_status: str

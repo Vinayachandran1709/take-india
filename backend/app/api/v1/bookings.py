@@ -3,6 +3,7 @@ from fastapi import APIRouter, status
 from app.api.dependencies import CurrentClock, DatabaseSession
 from app.schemas.api import BookingInitiateRequest, BookingInitiateResponse
 from app.services.booking_service import initiate_booking
+from app.services.payments.security import new_public_token
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
@@ -19,4 +20,7 @@ async def create_booking_hold(
 ) -> BookingInitiateResponse:
     async with db.begin():
         booking = await initiate_booking(db, payload, clock=clock)
-    return BookingInitiateResponse.model_validate(booking)
+        token, booking.public_token_hash = new_public_token()
+    return BookingInitiateResponse.model_validate(booking).model_copy(
+        update={"public_booking_token": token}
+    )

@@ -107,6 +107,7 @@ async def has_overlap(
     end_time: time,
     now_utc: datetime,
     staff_member_id: uuid.UUID | None,
+    exclude_booking_id: uuid.UUID | None = None,
 ) -> bool:
     query = select(Booking.id).where(
         Booking.merchant_id == merchant_id,
@@ -115,6 +116,8 @@ async def has_overlap(
         Booking.end_time > start_time,
         occupying_booking(now_utc),
     )
+    if exclude_booking_id is not None:
+        query = query.where(Booking.id != exclude_booking_id)
     if staff_member_id is not None:
         query = query.where(Booking.staff_member_id == staff_member_id)
     else:

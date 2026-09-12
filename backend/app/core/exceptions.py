@@ -30,14 +30,25 @@ def install_exception_handlers(app: FastAPI) -> None:
     async def handle_app_error(_: Request, exc: AppError) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
+            headers={"Cache-Control": "no-store"},
             content=jsonable_encoder(error_payload(exc.code, exc.message, exc.details)),
         )
 
     @app.exception_handler(RequestValidationError)
     async def handle_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+        message = "Request validation failed"
+        if _.url.path.endswith("/payment-settings") and any(
+            error["loc"][-1] in ("mode", "key_id") for error in exc.errors()
+        ):
+            message = "Only TEST mode and rzp_test_ credentials are accepted"
         return JSONResponse(
             status_code=400,
+            headers={"Cache-Control": "no-store"},
             content=jsonable_encoder(
-                error_payload("VALIDATION_ERROR", "Request validation failed", exc.errors())
+                error_payload(
+                    "VALIDATION_ERROR",
+                    message,
+                    [{"loc": error["loc"], "type": error["type"]} for error in exc.errors()],
+                )
             ),
         )

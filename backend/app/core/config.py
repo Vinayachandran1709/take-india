@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 from typing import Annotated
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -18,6 +19,8 @@ class Settings(BaseSettings):
     direct_database_url: str | None = None
     test_database_url: str | None = None
     allow_test_database_reset: bool = False
+    credential_encryption_key: SecretStr | None = None
+    public_api_url: str = "http://localhost:8000"
 
     jwt_secret_key: SecretStr | None = None
     jwt_algorithm: str = "HS256"
@@ -49,4 +52,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings(_env_file=os.environ.get("TAKE_INDIA_ENV_FILE", ".env"))

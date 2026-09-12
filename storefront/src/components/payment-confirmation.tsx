@@ -22,10 +22,11 @@ export function PaymentConfirmation({ reference }: { reference: string }) {
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useRef(true);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (timeout = 5000) => {
     if (!token.current) throw new Error("Open the private booking link in the original browser tab.");
     const { data } = await axios.get<Status>(`${apiBaseUrl}/bookings/${encodeURIComponent(reference)}/status`, {
       headers: { "X-Booking-Token": token.current },
+      timeout,
     });
     if (mounted.current) {
       setStatus(data);
@@ -55,12 +56,14 @@ export function PaymentConfirmation({ reference }: { reference: string }) {
   async function poll(deadline: number) {
     while (mounted.current && Date.now() < deadline) {
       try {
-        const current = await refresh();
+        const current = await refresh(Math.max(1, Math.min(5000, deadline - Date.now())));
         if (current.booking_status === "CONFIRMED" || current.payment_review_required) {
           setMessage(""); return;
         }
       } catch { /* A temporary error does not turn a payment into a failure. */ }
-      await new Promise<void>((resolve) => { pollTimer.current = setTimeout(resolve, 3000); });
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      await new Promise<void>((resolve) => { pollTimer.current = setTimeout(resolve, Math.min(3000, remaining)); });
     }
     if (mounted.current) setMessage("Confirmation is still processing. Use Refresh status to check again.");
   }
@@ -70,7 +73,7 @@ export function PaymentConfirmation({ reference }: { reference: string }) {
     inFlight.current = true; setBusy(true); setMessage("Preparing secure Test Mode checkout…");
     try {
       const headers = { "X-Booking-Token": token.current };
-      const { data } = await axios.post(`${apiBaseUrl}/bookings/${encodeURIComponent(reference)}/payment`, {}, { headers });
+      const { data } = await axios.post(`${apiBaseUrl}/bookings/${encodeURIComponent(reference)}/payment`, {}, { headers, timeout: 30000 });
       if (data.state === "RECONCILED") { await refresh(); setMessage(""); return; }
       const result = await checkout(data);
       if (!result) {
@@ -78,7 +81,7 @@ export function PaymentConfirmation({ reference }: { reference: string }) {
         await refresh(); return;
       }
       setMessage("Checking payment confirmation…");
-      await axios.post(`${apiBaseUrl}/payments/razorpay/verify`, { booking_reference: reference, ...result }, { headers });
+      await axios.post(`${apiBaseUrl}/payments/razorpay/verify`, { booking_reference: reference, ...result }, { headers, timeout: 30000 });
       if (pollTimer.current) clearTimeout(pollTimer.current);
       await poll(Date.now() + 60000);
     } catch (error) {

@@ -17,7 +17,7 @@ app.add_middleware(
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Booking-Token"],
 )
 install_exception_handlers(app)
 app.include_router(api_router, prefix="/api/v1")
@@ -26,4 +26,3 @@ app.include_router(api_router, prefix="/api/v1")
 @app.get("/health", tags=["system"])
 async def health() -> dict[str, str]:
     return {"status": "ok"}
-

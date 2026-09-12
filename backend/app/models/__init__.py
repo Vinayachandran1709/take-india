@@ -10,6 +10,12 @@ from app.models.entities import (
     ServiceStaff,
     StaffMember,
 )
+from app.models.payments import (
+    MerchantPaymentConfig,
+    PaymentCaptureAnomaly,
+    PaymentTransaction,
+    PaymentWebhookEvent,
+)
 
 __all__ = [
     "Base",
@@ -17,10 +23,13 @@ __all__ = [
     "Booking",
     "Customer",
     "Merchant",
+    "MerchantPaymentConfig",
+    "PaymentCaptureAnomaly",
+    "PaymentTransaction",
+    "PaymentWebhookEvent",
     "OperatingHour",
     "Service",
     "ServiceCustomField",
     "ServiceStaff",
     "StaffMember",
 ]
-
