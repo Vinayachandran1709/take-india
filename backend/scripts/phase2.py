@@ -17,9 +17,17 @@ def phase2_environment() -> dict[str, str]:
     if not source.is_file():
         raise RuntimeError(
             "Create backend/.env.phase2 with the separate Neon phase2-dev URLs first"
-        )
+    )
     values = dotenv_values(source)
     original = dotenv_values(".env")
+    missing = [
+        name for name in ("DATABASE_URL", "DIRECT_DATABASE_URL") if not values.get(name)
+    ]
+    if missing:
+        joined = ", ".join(missing)
+        raise RuntimeError(
+            f"Set {joined} in backend/.env.phase2 from the separate Neon phase2-dev branch"
+        )
     try:
         pooled = database_identity(values["DATABASE_URL"])
         direct = database_identity(values["DIRECT_DATABASE_URL"])
