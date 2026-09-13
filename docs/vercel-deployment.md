@@ -35,15 +35,18 @@ Create preview deployments:
 The Vercel projects are linked to GitHub, so Vercel can also build from Git once
 the repository integration is enabled for the chosen branches.
 
-## Backend CORS
+## Public access and backend CORS
 
-The Railway backend currently allows localhost origins only. The Vercel domains
-need to be added to `CORS_ORIGINS` before browser API calls from production can
-work:
+SSO deployment protection is disabled for both Vercel projects so the production
+aliases can be opened publicly.
+
+The Railway backend `CORS_ORIGINS` includes the Vercel domains:
 
 ```text
 http://localhost:3000,http://localhost:5173,https://take-india-storefront.vercel.app,https://take-india-dashboard.vercel.app
 ```
 
-This changes the existing Railway backend service configuration and causes a
-backend redeploy. It does not touch Neon or the unused Railway PostgreSQL service.
+This changed only the existing Railway backend service configuration and caused
+a backend redeploy. It did not touch Neon or the unused Railway PostgreSQL
+service. Railway deployment `d7130d3f-8bc4-4d38-aa48-9e656409c784` succeeded and
+the backend service is online.
