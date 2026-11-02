@@ -30,7 +30,8 @@ export function setupWaitlistForm(form, apiBaseUrl, request = fetch) {
     button.textContent = 'Joining…';
     message('Saving your request…', 'loading');
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    // Render's free instances can take time to wake after inactivity.
+    const timeout = setTimeout(() => controller.abort(), 90000);
     try {
       const response = await request(`${base}/waitlist`, {
         method: 'POST',
