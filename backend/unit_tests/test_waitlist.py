@@ -124,6 +124,7 @@ async def test_duplicate_formats_leave_one_original_entry(client, isolated_db):
         {},
         {"business_type": "Other"},
         {"whatsapp": VALID["whatsapp"]},
+        {"business_type": VALID["business_type"], "whatsapp": VALID["whatsapp"]},
         {**VALID, "name": ""},
         {**VALID, "name": " "},
         {**VALID, "name": "x" * 121},
@@ -165,15 +166,6 @@ async def test_invalid_payloads_never_insert(client, isolated_db, payload):
 async def test_all_displayed_business_types_and_no_extra_personal_fields(client, business_type):
     result = await client.post("/api/v1/waitlist", json={**VALID, "business_type": business_type})
     assert result.status_code == 200
-
-
-async def test_old_form_payload_can_submit_during_rollout(client, isolated_db):
-    result = await client.post(
-        "/api/v1/waitlist",
-        json={"business_type": VALID["business_type"], "whatsapp": VALID["whatsapp"]},
-    )
-    assert result.status_code == 200
-    assert isolated_db.session.scalar(select(WaitlistEntry.name)) is None
 
 
 @pytest.mark.parametrize("stage", ["execute", "commit", "connect"])

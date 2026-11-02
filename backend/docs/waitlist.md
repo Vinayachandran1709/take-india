@@ -2,9 +2,9 @@
 
 The static landing page submits `POST /api/v1/waitlist` to the existing FastAPI
 backend. The endpoint accepts JSON with `name`, `business_type`, and `whatsapp`,
-matching the two landing forms. No email is collected. The name is required by the
-form but optional in the API during the live-page rollout, so an older cached page
-can still submit. The business type
+matching the two landing forms. No email is collected. The name is required in
+both the form and API; the database column is nullable only to preserve entries
+created before names were collected. The business type
 must be one of the displayed options; an Indian mobile number with optional `+91`
 is normalized to E.164. The server limits this route to 4 KiB of JSON.
 
