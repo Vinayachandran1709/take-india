@@ -1,0 +1,17 @@
+{
+  "name": "typein-landing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Independent static typein landing page with a configurable waitlist API.",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node scripts/waitlist.test.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

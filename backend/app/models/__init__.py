@@ -16,6 +16,7 @@ from app.models.payments import (
     PaymentTransaction,
     PaymentWebhookEvent,
 )
+from app.models.waitlist import WaitlistEntry
 
 __all__ = [
     "Base",
@@ -32,4 +33,5 @@ __all__ = [
     "ServiceCustomField",
     "ServiceStaff",
     "StaffMember",
+    "WaitlistEntry",
 ]

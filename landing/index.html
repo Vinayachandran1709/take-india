@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>typein — A booking page for businesses on WhatsApp</title>
+  <meta name="description" content="Explore typein, a planned WhatsApp-first booking experience for local service businesses. Join the early-access list for updates.">
+  <meta property="og:title" content="typein — A booking page for businesses on WhatsApp">
+  <meta property="og:description" content="Meet typein and join the early-access list.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="typein — A booking page for businesses on WhatsApp">
+  <meta name="twitter:description" content="Meet typein and join the early-access list.">
+  <!-- Add canonical, og:url, and a real og:image after the public domain and asset are approved. -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&amp;display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+  <script type="module" src="waitlist.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="p B">
+<header class="w hd">
+<a class="lg" href="#top" aria-label="typein home">typein<i>.</i>
+</a>
+<a class="bt" href="#joinF">Join waitlist</a>
+</header>
+<main id="main-content">
+<section class="hero" id="top" aria-labelledby="hero-title">
+<h1 id="hero-title">Bookings by phone and DM?<br>
+<em>Open your WhatsApp store.</em>
+</h1>
+<p class="in">A WhatsApp-first store for service businesses. We're building it so customers can book, pay and rebook through WhatsApp, with automated Google review requests and rebooking reminders.</p>
+<form class="f waitlist-form" id="joinF" method="post" aria-label="Join the typein early-access waitlist">
+  <label class="vh" for="business-hero">Business type</label>
+  <select id="business-hero" name="business_type" required disabled aria-describedby="waitlist-status-hero">
+<option>Salon &amp; hair studio</option>
+<option>Makeup, lash &amp; nail artist</option>
+<option>Custom baker</option>
+<option>Aesthetic or dental clinic</option>
+<option>Yoga, dance or fitness studio</option>
+<option>Other</option>
+</select>
+  <label class="vh" for="phone-hero">WhatsApp number</label>
+  <input id="phone-hero" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" required minlength="10" maxlength="32" placeholder="Your WhatsApp number" disabled aria-describedby="waitlist-status-hero">
+  <button type="submit" disabled>Join the waitlist</button>
+  <div class="waitlist-consent"><input id="consent-hero" name="consent" type="checkbox" required disabled><span><label for="consent-hero">I agree to receive typein early-access updates on WhatsApp.</label> <a href="privacy.html">Privacy notice</a></span></div>
+  <p class="wls" id="waitlist-status-hero" role="status" aria-live="polite" aria-atomic="true"></p>
+</form>
+<div class="st">
+<div class="fl" style="left:11%;top:60px">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="18" cy="18" r="13">
+</circle>
+<path d="m11 18 5 5 9-10">
+</path>
+</svg>UPI verified</div>
+<div class="fl" style="left:17%;top:260px">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="5" y="8" width="26" height="23" rx="4">
+</rect>
+<path d="M5 15h26M12 5v6M24 5v6">
+</path>
+</svg>Rescheduled</div>
+<div class="ph">
+<div class="t">t. Your studio</div>
+<div class="ch">
+<p class="m">Any yoga slot tomorrow?</p>
+<div class="m">
+<b>Morning yoga · 7:00 AM</b>
+<span class="chip on">Book &amp; pay</span>
+</div>
+<p class="m u">Booked. Paid via UPI ✓</p>
+<p class="m">Loved class? Rate us <b>★★★★★</b>
+</p>
+<p class="m">Ready for your next class?<span class="chip on">Rebook</span>
+</p>
+</div>
+</div>
+<div class="fl" style="right:11%;top:90px">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="m18 4 4.500 9.500 10 1.200-7.400 7 2 10L18 26.500 8.900 31.700l2-10-7.400-7 10-1.200z">
+</path>
+</svg>Review requested</div>
+<div class="fl" style="right:16%;top:300px">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M7 16a11 11 0 0 1 19-6l3 3M29 5v8h-8M29 20a11 11 0 0 1-19 6l-3-3M7 31v-8h8">
+</path>
+</svg>Rebooked</div>
+</div>
+</section>
+<section class="w sec" style="padding-top:100px">
+<div class="sh">
+<p class="lb">No website needed</p>
+<h2>Calls and DMs now end in a booking.</h2>
+</div>
+<div class="src">
+<span>
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="5" y="5" width="26" height="26" rx="8">
+</rect>
+<circle cx="18" cy="18" r="6">
+</circle>
+<circle cx="26" cy="10" r="1">
+</circle>
+</svg>Instagram DMs</span>
+<span>
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M18 32S7 22 7 14a11 11 0 0 1 22 0c0 8-11 18-11 18Z">
+</path>
+<circle cx="18" cy="14" r="4">
+</circle>
+</svg>Google profile</span>
+<span>
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M6 8h24v16H16l-7 6v-6H6z">
+</path>
+</svg>Phone calls</span>
+<span class="ar">→</span>
+<span class="t2">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M5 14 8 6h20l3 8M7 14v16h22V14M5 14c0 3 4.5 3 6.5 0 2 3 4.500 3 6.500 0 2 3 4.500 3 6.500 0 2 3 6.500 3 6.500 0M15 30v-8h6v8">
+</path>
+</svg>typein store</span>
+</div>
+</section>
+<section class="w sec">
+<div class="sh">
+<p class="lb">Sound familiar?</p>
+<h2>Five daily headaches. One planned workflow.</h2>
+</div>
+<div class="pg5">
+<div class="pc">
+<div class="v">
+<span class="b1">DM: price? slots?</span>
+<span class="b1 f">missed call · 3</span>
+<span class="b1">Hello?? Still open?</span>
+</div>
+<h3>Bookings scattered across DMs and calls</h3>
+<div class="x">A shareable booking page helps take the booking</div>
+</div>
+<div class="pc">
+<div class="v">
+<span class="b1">Slots?</span>
+<span class="b1">Price?</span>
+<span class="b1">Hello??</span>
+<span class="b1 g">Replying…</span>
+</div>
+<h3>Every DM and call needs a manual reply</h3>
+<div class="x">Planned: faster replies and booking</div>
+</div>
+<div class="pc">
+<div class="v">
+<span class="b1 f">payment screenshot.jpg</span>
+<span class="b1">Paid, check once?</span>
+<span class="b1 g">Checking…</span>
+</div>
+<h3>UPI screenshots to verify</h3>
+<div class="x">Planned: verified advance payments</div>
+</div>
+<div class="pc">
+<div class="v">
+<span class="b1">Can we move it?</span>
+<span class="b1 g">Which day?</span>
+<span class="b1">Friday 6?</span>
+<span class="b1 g">Let me check…</span>
+</div>
+<h3>Rescheduling is another round of chat</h3>
+<div class="x">Planned: self-serve rescheduling</div>
+</div>
+<div class="pc">
+<div class="v">
+<div class="ln" style="width:90%">
+</div>
+<div class="ln" style="width:90%">
+</div>
+<span class="b1 f">no return visit booked</span>
+</div>
+<h3>Customers visit once, then drift</h3>
+<div class="x">Planned: gentle rebooking nudges</div>
+</div>
+</div>
+</section>
+<section class="w sec">
+<div class="sh">
+<p class="lb">Planned follow-up journey</p>
+<h2>Follow-up that never forgets a customer.</h2>
+</div>
+<div class="cy">
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="18" cy="18" r="13">
+</circle>
+<path d="m11 18 5 5 9-10">
+</path>
+</svg>
+</span>Booked</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="5" y="8" width="26" height="23" rx="4">
+</rect>
+<path d="M5 15h26M12 5v6M24 5v6">
+</path>
+</svg>
+</span>Reminded</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="18" cy="7" r="3">
+</circle>
+<path d="M18 11v9m-9-6 9 4 9-4M18 20l-8 10m8-10 8 10">
+</path>
+</svg>
+</span>Visit</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="m18 4 4.500 9.500 10 1.200-7.400 7 2 10L18 26.500 8.900 31.700l2-10-7.400-7 10-1.200z">
+</path>
+</svg>
+</span>Thank-you &amp; review</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M6 8h24v16H16l-7 6v-6H6z">
+</path>
+</svg>
+</span>Check-in</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M7 16a11 11 0 0 1 19-6l3 3M29 5v8h-8M29 20a11 11 0 0 1-19 6l-3-3M7 31v-8h8">
+</path>
+</svg>
+</span>Rebook</div>
+</div>
+<div class="lp">↻ And around again for every customer</div>
+<div class="sp">
+<div>
+<p>Hi Asha, hope class was great today. Would you leave us a quick Google review?</p>
+<small>A couple of hours after the visit</small>
+</div>
+<div>
+<p>Hi Asha, it’s been a while. Want your usual 7:00 AM slot this week?</p>
+<small>When it’s time to rebook</small>
+</div>
+</div>
+</section>
+<section class="w sec">
+<div class="sh">
+<p class="lb">Concept features for feedback</p>
+<h2>Your future front desk, in one place.</h2>
+</div>
+<div class="gr">
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M5 14 8 6h20l3 8M7 14v16h22V14M5 14c0 3 4.5 3 6.5 0 2 3 4.500 3 6.500 0 2 3 4.500 3 6.500 0 2 3 6.500 3 6.500 0M15 30v-8h6v8">
+</path>
+</svg>
+</span>
+<h3>WhatsApp store</h3>
+<p>Services and classes on a shareable page</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M6 8h24v16H16l-7 6v-6H6z">
+</path>
+</svg>
+</span>
+<h3>Instant replies</h3>
+<p>Planned: faster enquiry replies</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="18" cy="18" r="13">
+</circle>
+<path d="m11 18 5 5 9-10">
+</path>
+</svg>
+</span>
+<h3>UPI, verified</h3>
+<p>Planned: verified advance payments</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="5" y="8" width="26" height="23" rx="4">
+</rect>
+<path d="M5 15h26M12 5v6M24 5v6">
+</path>
+</svg>
+</span>
+<h3>Easy rescheduling</h3>
+<p>Planned: self-serve rescheduling</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="5" y="5" width="26" height="26" rx="8">
+</rect>
+<circle cx="18" cy="18" r="6">
+</circle>
+<circle cx="26" cy="10" r="1">
+</circle>
+</svg>
+</span>
+<h3>Instagram DMs</h3>
+<p>Planned: a path from DM to booking</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M18 32S7 22 7 14a11 11 0 0 1 22 0c0 8-11 18-11 18Z">
+</path>
+<circle cx="18" cy="14" r="4">
+</circle>
+</svg>
+</span>
+<h3>Google to DM</h3>
+<p>Planned: a link from Google profile</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="m18 4 4.500 9.500 10 1.200-7.400 7 2 10L18 26.500 8.900 31.700l2-10-7.400-7 10-1.200z">
+</path>
+</svg>
+</span>
+<h3>Google reviews</h3>
+<p>Planned: post-visit review requests</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M7 16a11 11 0 0 1 19-6l3 3M29 5v8h-8M29 20a11 11 0 0 1-19 6l-3-3M7 31v-8h8">
+</path>
+</svg>
+</span>
+<h3>Come-back nudges</h3>
+<p>Planned: rebooking reminders</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="8" y="6" width="20" height="26" rx="3">
+</rect>
+<path d="m13 18 3 3 6-7M14 6V4h8v2">
+</path>
+</svg>
+</span>
+<h3>Attendance</h3>
+<p>Planned: class attendance</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="4" y="9" width="28" height="19" rx="3">
+</rect>
+<path d="M4 15h28M10 22h6">
+</path>
+</svg>
+</span>
+<h3>Renewals</h3>
+<p>Planned: renewal support</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="4" y="6" width="28" height="24" rx="3">
+</rect>
+<path d="M4 13h28m-18 7 3 3 6-6">
+</path>
+</svg>
+</span>
+<h3>No website needed</h3>
+<p>A shareable business and booking page</p>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M6 11h24M6 25h24">
+</path>
+<circle cx="14" cy="11" r="3">
+</circle>
+<circle cx="23" cy="25" r="3">
+</circle>
+</svg>
+</span>
+<h3>Made to fit</h3>
+<p>Planned: settings for each business</p>
+</div>
+</div>
+</section>
+<section class="w sec">
+<div class="sh">
+<p class="lb">Who it’s for</p>
+<h2>Run on calls and DMs today? Find yourself here.</h2>
+</div>
+<div class="wf">
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="18" cy="7" r="3">
+</circle>
+<path d="M18 11v9m-9-6 9 4 9-4M18 20l-8 10m8-10 8 10">
+</path>
+</svg>
+</span>
+<div>
+<h3>Yoga &amp; pilates</h3>
+<span class="c">Classes</span>
+<span class="c">Attendance</span>
+</div>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M4 18h28M8 11v14M13 8v20M23 8v20M28 11v14">
+</path>
+</svg>
+</span>
+<div>
+<h3>Gyms &amp; fitness</h3>
+<span class="c">Memberships</span>
+<span class="c">Renewals</span>
+</div>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="14" cy="6" r="3">
+</circle>
+<path d="M14 10c2 6 2 8 0 12l-4 9M14 14l12-6M14 22l12 3">
+</path>
+</svg>
+</span>
+<div>
+<h3>Dance academies</h3>
+<span class="c">Batches</span>
+<span class="c">Renewals</span>
+</div>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M12 27V10l17-4v17M12 15l17-4">
+</path>
+<ellipse cx="8" cy="28" rx="4" ry="3">
+</ellipse>
+<ellipse cx="25" cy="24" rx="4" ry="3">
+</ellipse>
+</svg>
+</span>
+<div>
+<h3>Music classes</h3>
+<span class="c">Lessons</span>
+<span class="c">Rebooking</span>
+</div>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="9" cy="26" r="4">
+</circle>
+<circle cx="9" cy="10" r="4">
+</circle>
+<path d="m12 12 20 14M12 24 32 10">
+</path>
+</svg>
+</span>
+<div>
+<h3>Salons &amp; spas</h3>
+<span class="c">Appointments</span>
+<span class="c">Rebooking</span>
+</div>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M18 3c0 10 5 15 15 15-10 0-15 5-15 15 0-10-5-15-15-15 10 0 15-5 15-15Z">
+</path>
+</svg>
+</span>
+<div>
+<h3>Nail &amp; beauty</h3>
+<span class="c">Slots</span>
+<span class="c">Reviews</span>
+</div>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="18" cy="23" r="9">
+</circle>
+<path d="m13 9 5-5 5 5-5 5z">
+</path>
+</svg>
+</span>
+<div>
+<h3>Bridal &amp; makeup</h3>
+<span class="c">Trials</span>
+<span class="c">UPI deposits</span>
+</div>
+</div>
+<div>
+<span class="ic">
+<svg viewBox="0 0 36 36" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M18 31S5 23 5 13a7 7 0 0 1 13-3 7 7 0 0 1 13 3c0 10-13 18-13 18Z">
+</path>
+</svg>
+</span>
+<div>
+<h3>Wellness &amp; clinics</h3>
+<span class="c">Appointments</span>
+<span class="c">Reminders</span>
+</div>
+</div>
+</div>
+</section>
+<section class="w sec">
+<div class="cta" id="join">
+<h2>Open your store<br>on WhatsApp.</h2>
+<form class="f waitlist-form" id="joinF2" method="post" aria-label="Join the typein early-access waitlist">
+  <label class="vh" for="business-footer">Business type</label>
+  <select id="business-footer" name="business_type" required disabled aria-describedby="waitlist-status-footer">
+<option>Salon &amp; hair studio</option>
+<option>Makeup, lash &amp; nail artist</option>
+<option>Custom baker</option>
+<option>Aesthetic or dental clinic</option>
+<option>Yoga, dance or fitness studio</option>
+<option>Other</option>
+</select>
+  <label class="vh" for="phone-footer">WhatsApp number</label>
+  <input id="phone-footer" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" required minlength="10" maxlength="32" placeholder="Your WhatsApp number" disabled aria-describedby="waitlist-status-footer">
+  <button type="submit" disabled>Join the waitlist</button>
+  <div class="waitlist-consent"><input id="consent-footer" name="consent" type="checkbox" required disabled><span><label for="consent-footer">I agree to receive typein early-access updates on WhatsApp.</label> <a href="privacy.html">Privacy notice</a></span></div>
+  <p class="wls" id="waitlist-status-footer" role="status" aria-live="polite" aria-atomic="true"></p>
+</form>
+</div>
+</section>
+</main>
+<footer class="w ft">
+<span class="lg">typein<i>.</i>
+</span>
+<span>WhatsApp store for your business</span>
+</footer>
+</div>
+</body>
+</html>
