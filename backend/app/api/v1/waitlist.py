@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -81,13 +80,15 @@ async def waitlist_database() -> AsyncIterator[AsyncSession]:
     try:
         try:
             session = await anext(sessions)
-        except (RuntimeError, SQLAlchemyError, OSError):
+        except Exception:
+            # Connection setup can raise an unwrapped driver error before SQLAlchemy
+            # converts it. Keep database diagnostics out of public responses.
             raise AppError("WAITLIST_UNAVAILABLE", UNAVAILABLE_MESSAGE, 503) from None
         yield session
     finally:
         try:
             await sessions.aclose()
-        except (SQLAlchemyError, OSError):
+        except Exception:
             raise AppError("WAITLIST_UNAVAILABLE", UNAVAILABLE_MESSAGE, 503) from None
 
 
@@ -108,10 +109,10 @@ async def register_waitlist(
     try:
         await db.execute(statement)
         await db.commit()
-    except (SQLAlchemyError, OSError):
+    except Exception:
         try:
             await db.rollback()
-        except (SQLAlchemyError, OSError):
+        except Exception:
             pass
         raise AppError("WAITLIST_UNAVAILABLE", UNAVAILABLE_MESSAGE, 503) from None
     # New and existing registrations have the same response; existing details are not overwritten.

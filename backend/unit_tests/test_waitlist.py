@@ -43,6 +43,8 @@ class IsolatedSession:
             raise SQLAlchemyError("internal database detail that must not be returned")
         if self.fail_at == "connect":
             raise OSError("internal database detail that must not be returned")
+        if self.fail_at == "raw-driver":
+            raise RuntimeError("raw driver credential detail that must not be returned")
         return self.session.execute(statement)
 
     async def commit(self):
@@ -168,13 +170,14 @@ async def test_all_displayed_business_types_and_no_extra_personal_fields(client,
     assert result.status_code == 200
 
 
-@pytest.mark.parametrize("stage", ["execute", "commit", "connect"])
+@pytest.mark.parametrize("stage", ["execute", "commit", "connect", "raw-driver"])
 async def test_persistence_error_rolls_back_and_never_claims_success(client, isolated_db, stage):
     isolated_db.fail_at = stage
     response = await client.post("/api/v1/waitlist", json=VALID)
     assert response.status_code == 503
     assert response.json()["error"]["code"] == "WAITLIST_UNAVAILABLE"
     assert "internal database detail" not in response.text
+    assert "raw driver credential detail" not in response.text
     assert "9876543210" not in response.text
     assert isolated_db.rollbacks == 1
     assert isolated_db.session.scalar(select(func.count()).select_from(WaitlistEntry)) == 0
