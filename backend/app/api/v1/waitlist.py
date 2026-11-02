@@ -104,7 +104,11 @@ async def register_waitlist(
     statement = (
         insert(WaitlistEntry)
         .values(name=payload.name, whatsapp=payload.whatsapp, business_type=payload.business_type)
-        .on_conflict_do_nothing(index_elements=[WaitlistEntry.whatsapp])
+        .on_conflict_do_update(
+            index_elements=[WaitlistEntry.whatsapp],
+            set_={"name": payload.name},
+            where=WaitlistEntry.name.is_(None),
+        )
     )
     try:
         await db.execute(statement)
@@ -115,5 +119,5 @@ async def register_waitlist(
         except Exception:
             pass
         raise AppError("WAITLIST_UNAVAILABLE", UNAVAILABLE_MESSAGE, 503) from None
-    # New and existing registrations have the same response; existing details are not overwritten.
+    # Retried legacy entries can gain a missing name. Other fields stay unchanged.
     return WaitlistAccepted()

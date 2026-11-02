@@ -10,6 +10,8 @@ is normalized to E.164. The server limits this route to 4 KiB of JSON.
 
 A new registration and a duplicate number both return HTTP 200 with
 `{"accepted":true}`. The database uniqueness constraint prevents duplicate rows.
+A retry can fill in a missing name on an older entry; it cannot overwrite an
+existing name or business type.
 Invalid input returns HTTP 400 with field guidance. A body over 4 KiB returns 413;
 an unavailable database returns 503 with a generic message. The response does not
 echo a phone number or database details. No booking, payment or message is created.

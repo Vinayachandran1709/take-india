@@ -103,7 +103,8 @@ async def test_registration_inserts_only_waitlist_and_normalizes(client, isolate
     statement = isolated_db.statements[0]
     assert statement.table.name == "waitlist_entries"
     compiled = statement.compile(dialect=postgresql.dialect())
-    assert "ON CONFLICT (whatsapp) DO NOTHING" in str(compiled)
+    assert "ON CONFLICT (whatsapp) DO UPDATE SET name" in str(compiled)
+    assert "WHERE waitlist_entries.name IS NULL" in str(compiled)
     assert entry.whatsapp not in str(compiled)  # Bound parameters, never interpolated SQL.
 
 
@@ -118,6 +119,24 @@ async def test_duplicate_formats_leave_one_original_entry(client, isolated_db):
     assert isolated_db.session.scalar(select(func.count()).select_from(WaitlistEntry)) == 1
     assert isolated_db.session.scalar(select(WaitlistEntry.business_type)) == VALID["business_type"]
     assert isolated_db.session.scalar(select(WaitlistEntry.name)) == VALID["name"]
+
+
+async def test_retry_fills_legacy_missing_name_only(client, isolated_db):
+    isolated_db.session.add(
+        WaitlistEntry(
+            name=None,
+            whatsapp="+919876543210",
+            business_type="Custom baker",
+        )
+    )
+    isolated_db.session.commit()
+    response = await client.post("/api/v1/waitlist", json=VALID)
+    assert response.status_code == 200
+    assert response.json() == {"accepted": True}
+    assert isolated_db.session.scalar(select(func.count()).select_from(WaitlistEntry)) == 1
+    entry = isolated_db.session.scalar(select(WaitlistEntry))
+    assert entry.name == "Asha"
+    assert entry.business_type == "Custom baker"
 
 
 @pytest.mark.parametrize(
