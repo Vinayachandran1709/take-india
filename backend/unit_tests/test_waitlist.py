@@ -190,13 +190,18 @@ async def test_all_displayed_business_types_and_no_extra_personal_fields(client,
 
 
 @pytest.mark.parametrize("stage", ["execute", "commit", "connect", "raw-driver"])
-async def test_persistence_error_rolls_back_and_never_claims_success(client, isolated_db, stage):
+async def test_persistence_error_rolls_back_and_never_claims_success(
+    client, isolated_db, stage, caplog
+):
     isolated_db.fail_at = stage
     response = await client.post("/api/v1/waitlist", json=VALID)
     assert response.status_code == 503
     assert response.json()["error"]["code"] == "WAITLIST_UNAVAILABLE"
     assert "internal database detail" not in response.text
     assert "raw driver credential detail" not in response.text
+    assert "internal database detail" not in caplog.text
+    assert "raw driver credential detail" not in caplog.text
+    assert "Waitlist database failure stage=write" in caplog.text
     assert "9876543210" not in response.text
     assert isolated_db.rollbacks == 1
     assert isolated_db.session.scalar(select(func.count()).select_from(WaitlistEntry)) == 0

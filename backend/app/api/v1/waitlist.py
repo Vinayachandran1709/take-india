@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncIterator
 from typing import Annotated
 
@@ -15,6 +16,20 @@ from app.schemas.waitlist import WaitlistAccepted, WaitlistRequest
 
 MAX_BODY_BYTES = 4096
 UNAVAILABLE_MESSAGE = "We couldn't save your request. Please try again shortly."
+logger = logging.getLogger(__name__)
+
+
+def log_database_failure(stage: str, exc: Exception) -> None:
+    """Record error classes only; never include submitted values or a database URL."""
+    cause = exc.__cause__ or exc.__context__
+    original = getattr(exc, "orig", None)
+    logger.warning(
+        "Waitlist database failure stage=%s error=%s cause=%s original=%s",
+        stage,
+        type(exc).__name__,
+        type(cause).__name__ if cause else "none",
+        type(original).__name__ if original else "none",
+    )
 
 
 class WaitlistRoute(APIRoute):
@@ -80,15 +95,17 @@ async def waitlist_database() -> AsyncIterator[AsyncSession]:
     try:
         try:
             session = await anext(sessions)
-        except Exception:
+        except Exception as exc:
             # Connection setup can raise an unwrapped driver error before SQLAlchemy
             # converts it. Keep database diagnostics out of public responses.
+            log_database_failure("open", exc)
             raise AppError("WAITLIST_UNAVAILABLE", UNAVAILABLE_MESSAGE, 503) from None
         yield session
     finally:
         try:
             await sessions.aclose()
-        except Exception:
+        except Exception as exc:
+            log_database_failure("close", exc)
             raise AppError("WAITLIST_UNAVAILABLE", UNAVAILABLE_MESSAGE, 503) from None
 
 
@@ -113,7 +130,8 @@ async def register_waitlist(
     try:
         await db.execute(statement)
         await db.commit()
-    except Exception:
+    except Exception as exc:
+        log_database_failure("write", exc)
         try:
             await db.rollback()
         except Exception:
