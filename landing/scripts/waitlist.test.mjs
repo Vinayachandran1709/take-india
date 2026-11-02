@@ -6,22 +6,22 @@ import { createPreviewServer } from '../server.mjs';
 
 // Minimal form interface for controller tests; not a simulated visual browser.
 function formFixture() {
+  const name = { value: '  Asha  ', disabled: true };
   const business = { value: 'Salon & hair studio', disabled: true };
   const whatsapp = { value: ' 9876543210 ', disabled: true };
-  const consent = { checked: true, disabled: true };
   const button = { textContent: 'Join the waitlist', disabled: true };
   const status = { textContent: '', dataset: {} };
-  const fields = { business_type: business, whatsapp, consent };
+  const fields = { name, business_type: business, whatsapp };
   const attributes = {};
   const handlers = {};
   return {
-    business, whatsapp, consent, button, status, attributes,
+    name, business, whatsapp, button, status, attributes,
     elements: { namedItem: (name) => fields[name] },
     querySelector: (selector) => selector === '.wls' ? status : button,
     addEventListener: (name, handler) => { handlers[name] = handler; },
     setAttribute: (name, value) => { attributes[name] = value; },
     reportValidity: () => true,
-    reset() { this.resetCount = (this.resetCount ?? 0) + 1; whatsapp.value = ''; consent.checked = false; },
+    reset() { this.resetCount = (this.resetCount ?? 0) + 1; name.value = ''; whatsapp.value = ''; },
     submit: () => handlers.submit({ preventDefault() {} }),
   };
 }
@@ -44,7 +44,7 @@ test('both forms use the same endpoint, payload, and explicit acceptance contrac
     assert.equal(url, `${api}/waitlist`);
     assert.equal(options.credentials, 'omit');
     assert.equal(options.method, 'POST');
-    assert.deepEqual(JSON.parse(options.body), { business_type: 'Salon & hair studio', whatsapp: '9876543210', consent: true });
+    assert.deepEqual(JSON.parse(options.body), { name: 'Asha', business_type: 'Salon & hair studio', whatsapp: '9876543210' });
   }
 });
 
@@ -64,16 +64,6 @@ test('in-flight requests lock controls and ignore accidental repeat submissions'
   assert.equal(form.attributes['aria-busy'], 'false');
 });
 
-test('unchecked consent never sends a request', async () => {
-  const form = formFixture();
-  form.consent.checked = false;
-  let called = false;
-  setupWaitlistForm(form, api, async () => { called = true; return accepted; });
-  await form.submit();
-  assert.equal(called, false);
-  assert.equal(form.status.dataset.state, 'error');
-});
-
 for (const statusCode of [400, 413, 422, 429, 500, 503]) {
   test(`HTTP ${statusCode} retains entered values and never shows success`, async () => {
     const form = formFixture();
@@ -81,6 +71,7 @@ for (const statusCode of [400, 413, 422, 429, 500, 503]) {
     await form.submit();
     assert.equal(form.status.dataset.state, 'error');
     assert.equal(form.whatsapp.value, ' 9876543210 ');
+    assert.equal(form.name.value, '  Asha  ');
     assert.equal(form.resetCount, undefined);
     assert.equal(form.button.disabled, false);
   });

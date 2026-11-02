@@ -49,9 +49,9 @@ class WaitlistRoute(APIRoute):
             except RequestValidationError as exc:
                 # Return field guidance, never the rejected values or Pydantic input details.
                 messages = {
+                    "name": "Enter your name (up to 120 characters).",
                     "whatsapp": "Enter a valid Indian mobile number, optionally prefixed with +91.",
                     "business_type": "Choose one of the listed business types.",
-                    "consent": "Agree to receive typein early-access updates on WhatsApp.",
                 }
                 details = [
                     {
@@ -60,14 +60,14 @@ class WaitlistRoute(APIRoute):
                         ),
                         "message": messages.get(
                             error["loc"][-1],
-                            "Use only business_type and whatsapp in a JSON object.",
+                            "Use only name, business_type and whatsapp in a JSON object.",
                         ),
                     }
                     for error in exc.errors()
                 ]
                 raise AppError(
                     "VALIDATION_ERROR",
-                    "Check your business type, WhatsApp number and contact consent.",
+                    "Check your name, business type and WhatsApp number.",
                     400,
                     details,
                 ) from None
@@ -102,7 +102,7 @@ async def register_waitlist(
     response.headers["Cache-Control"] = "no-store"
     statement = (
         insert(WaitlistEntry)
-        .values(whatsapp=payload.whatsapp, business_type=payload.business_type)
+        .values(name=payload.name, whatsapp=payload.whatsapp, business_type=payload.business_type)
         .on_conflict_do_nothing(index_elements=[WaitlistEntry.whatsapp])
     )
     try:

@@ -21,7 +21,12 @@ class WaitlistRequest(ApiModel):
 
     business_type: WaitlistBusinessType
     whatsapp: str = Field(min_length=10, max_length=32)
-    consent: Literal[True]
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def trim_name(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
 
     @field_validator("business_type", mode="before")
     @classmethod

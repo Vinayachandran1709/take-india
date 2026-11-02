@@ -35,6 +35,8 @@
 </h1>
 <p class="in">A WhatsApp-first store for service businesses. We're building it so customers can book, pay and rebook through WhatsApp, with automated Google review requests and rebooking reminders.</p>
 <form class="f waitlist-form" id="joinF" method="post" aria-label="Join the typein early-access waitlist">
+  <label class="vh" for="name-hero">Your name</label>
+  <input id="name-hero" name="name" type="text" autocomplete="name" required maxlength="120" placeholder="Your name" disabled aria-describedby="waitlist-status-hero">
   <label class="vh" for="business-hero">Business type</label>
   <select id="business-hero" name="business_type" required disabled aria-describedby="waitlist-status-hero">
 <option>Salon &amp; hair studio</option>
@@ -47,7 +49,7 @@
   <label class="vh" for="phone-hero">WhatsApp number</label>
   <input id="phone-hero" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" required minlength="10" maxlength="32" placeholder="Your WhatsApp number" disabled aria-describedby="waitlist-status-hero">
   <button type="submit" disabled>Join the waitlist</button>
-  <div class="waitlist-consent"><input id="consent-hero" name="consent" type="checkbox" required disabled><span><label for="consent-hero">I agree to receive typein early-access updates on WhatsApp.</label> <a href="privacy.html">Privacy notice</a></span></div>
+  <p class="waitlist-notice">By joining, you agree to receive typein early-access updates on WhatsApp. <a href="privacy.html">Privacy</a></p>
   <p class="wls" id="waitlist-status-hero" role="status" aria-live="polite" aria-atomic="true"></p>
 </form>
 <div class="st">
@@ -529,6 +531,8 @@
 <div class="cta" id="join">
 <h2>Open your store<br>on WhatsApp.</h2>
 <form class="f waitlist-form" id="joinF2" method="post" aria-label="Join the typein early-access waitlist">
+  <label class="vh" for="name-footer">Your name</label>
+  <input id="name-footer" name="name" type="text" autocomplete="name" required maxlength="120" placeholder="Your name" disabled aria-describedby="waitlist-status-footer">
   <label class="vh" for="business-footer">Business type</label>
   <select id="business-footer" name="business_type" required disabled aria-describedby="waitlist-status-footer">
 <option>Salon &amp; hair studio</option>
@@ -541,7 +545,7 @@
   <label class="vh" for="phone-footer">WhatsApp number</label>
   <input id="phone-footer" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" required minlength="10" maxlength="32" placeholder="Your WhatsApp number" disabled aria-describedby="waitlist-status-footer">
   <button type="submit" disabled>Join the waitlist</button>
-  <div class="waitlist-consent"><input id="consent-footer" name="consent" type="checkbox" required disabled><span><label for="consent-footer">I agree to receive typein early-access updates on WhatsApp.</label> <a href="privacy.html">Privacy notice</a></span></div>
+  <p class="waitlist-notice">By joining, you agree to receive typein early-access updates on WhatsApp. <a href="privacy.html">Privacy</a></p>
   <p class="wls" id="waitlist-status-footer" role="status" aria-live="polite" aria-atomic="true"></p>
 </form>
 </div>

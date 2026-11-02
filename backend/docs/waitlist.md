@@ -1,8 +1,10 @@
 # typein early-access waitlist
 
 The static landing page submits `POST /api/v1/waitlist` to the existing FastAPI
-backend. The endpoint accepts JSON with `business_type`, `whatsapp`, and required
-`consent: true`, matching the two landing forms. No email or name is collected. The business type
+backend. The endpoint accepts JSON with `name`, `business_type`, and `whatsapp`,
+matching the two landing forms. No email is collected. The name is required by the
+form but optional in the API during the live-page rollout, so an older cached page
+can still submit. The business type
 must be one of the displayed options; an Indian mobile number with optional `+91`
 is normalized to E.164. The server limits this route to 4 KiB of JSON.
 
@@ -25,6 +27,11 @@ The new `waitlist_entries` model uses the existing SQLAlchemy base and async
 session. Migration `f93a4c1236de` follows source revision `e82f3b0125cd` and only
 adds the table, UUID primary key, unique normalized WhatsApp number, business type,
 creation timestamp, and consent timestamp. Downgrade removes only this table.
+The next additive migration `a7d8c9012f34` adds a nullable name column (up to 120
+characters) so existing entries remain valid. Its downgrade removes only that column.
+It was applied to the isolated `typein-waitlist` branch on November 2, 2026;
+the applied revision and six waitlist columns were verified. Two existing entries
+were preserved and have no name because they predate the new form.
 On November 2, 2026, the approved isolated Neon branch `typein-waitlist` was forked
 from `development`. It started at `cbdbf24900c6`; the offline Alembic-generated SQL
 for `d71e2a9014bc`, `e82f3b0125cd`, and `f93a4c1236de` was applied to that branch
@@ -80,11 +87,11 @@ case. No real database is reset or contacted.
 
 ## Before public collection
 
-1. Review the required consent checkbox and the linked privacy notice in `landing/`.
+1. Review the short WhatsApp contact line and linked privacy page in `landing/`.
 2. Select a backend host and configure private `DATABASE_URL` and, for migrations,
    `DIRECT_DATABASE_URL` using the existing backend conventions.
-3. Use only the isolated `typein-waitlist` branch at revision `f93a4c1236de` for
-   this waitlist service. Verify its identity before setting private credentials.
+3. Use only the isolated `typein-waitlist` branch for this service. Its revision
+   was verified at `a7d8c9012f34`; verify branch identity before setting credentials.
 4. Set `CORS_ORIGINS` for the dedicated waitlist service to the exact landing origin.
    The process-local abuse limit is enabled; keep this service to one instance unless
    a shared limit is added.

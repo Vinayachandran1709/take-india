@@ -98,7 +98,7 @@ body { margin: 0; background: #FFF7E8; }
 .p .lg { color: #14142B; text-decoration: none; }
 .p .f { max-width: 760px; align-items: stretch; }
 .p .f select { flex: 1; min-width: 190px; min-height: 52px; border-radius: 10px; border: 1px solid var(--l); background: #fff; padding: 0 16px; font: inherit; font-size: 16px; color: #0B1030; }
-.p .f input[type="tel"] { min-width: 205px; }
+.p .f input[type="text"], .p .f input[type="tel"] { flex: 1; min-width: 205px; min-height: 52px; border-radius: 10px; border: 1px solid var(--l); background: #fff; padding: 0 16px; font: inherit; font-size: 16px; color: #0B1030; }
 .p .f .wls { flex-basis: 100%; margin: 0; font-size: 13px; text-align: center; }
 .p .f .wls { min-height: 20px; color: #55557A; }
 .p .f .wls:empty { display: none; }
@@ -109,7 +109,7 @@ body { margin: 0; background: #FFF7E8; }
 .p .cta .f .wls[data-state="error"] { color: #FFD3D3; }
 .p .cta .f .wls[data-state="success"] { color: #145438; }
 .p .f button:disabled, .p .f select:disabled, .p .f input:disabled { cursor: not-allowed; opacity: .72; }
-.p .f select:disabled, .p .f input[type="tel"]:disabled { background: #fff; color: #55557A; opacity: 1; }
+.p .f select:disabled, .p .f input[type="text"]:disabled, .p .f input[type="tel"]:disabled { background: #fff; color: #55557A; opacity: 1; }
 .p .f input:disabled::placeholder { color: #55557A; opacity: 1; }
 .p .f button:not(:disabled):hover, .p .bt:hover { filter: brightness(.88); }
 .p a:focus-visible, .p button:focus-visible, .p input:focus-visible, .p select:focus-visible, .skip-link:focus-visible { outline: 3px solid #1F3DFF; outline-offset: 3px; }
@@ -117,14 +117,12 @@ body { margin: 0; background: #FFF7E8; }
 .skip-link:focus { transform: translateY(0); }
 .p .ph { width: min(300px, 100%); }
 .p .cta { overflow: hidden; }
-@media (max-width: 700px) { .p .f { max-width: 470px; } .p .f select, .p .f input[type="tel"], .p .f button { flex-basis: 100%; width: 100%; } .p .hd { height: auto; min-height: 80px; gap: 12px; } }
+@media (max-width: 700px) { .p .f { max-width: 470px; } .p .f select, .p .f input[type="text"], .p .f input[type="tel"], .p .f button { flex-basis: 100%; width: 100%; } .p .hd { height: auto; min-height: 80px; gap: 12px; } }
 @media (max-width: 420px) { .p .w { padding-left: 20px; padding-right: 20px; } .p .sec { padding-left: 20px; padding-right: 20px; } .p .hero { padding-left: 20px; padding-right: 20px; } .p .cta { padding: 44px 20px; } .p .ph { max-width: 100%; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-.p .waitlist-consent { flex-basis: 100%; display: flex; align-items: flex-start; justify-content: center; gap: 7px; color: #39395D; font-size: 13px; line-height: 1.45; text-align: left; }
-.p .waitlist-consent label { cursor: pointer; }
-.p .waitlist-consent input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: #1F3DFF; }
-.p .waitlist-consent a { color: inherit; text-decoration: underline; }
-.p .cta .waitlist-consent { color: #F0F0FA; }
+.p .waitlist-notice { flex-basis: 100%; color: #39395D; font-size: 13px; line-height: 1.45; text-align: center; }
+.p .waitlist-notice a { color: inherit; text-decoration: underline; }
+.p .cta .waitlist-notice { color: #F0F0FA; }
 .p .privacy { max-width: 760px; padding-top: 56px; }
 .p .privacy h1 { font-size: clamp(34px, 5vw, 54px); }
 .p .privacy h2 { font-size: 23px; margin: 36px 0 10px; }

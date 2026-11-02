@@ -1,12 +1,12 @@
 import { normalizeApiBaseUrl } from './api-config.js';
 
 export function setupWaitlistForm(form, apiBaseUrl, request = fetch) {
+  const name = form.elements.namedItem('name');
   const business = form.elements.namedItem('business_type');
   const whatsapp = form.elements.namedItem('whatsapp');
-  const consent = form.elements.namedItem('consent');
   const button = form.querySelector('button[type="submit"]');
   const status = form.querySelector('.wls');
-  const fields = [business, whatsapp, consent, button];
+  const fields = [name, business, whatsapp, button];
   let submitting = false;
   let base;
   try { base = normalizeApiBaseUrl(apiBaseUrl); } catch { base = ''; }
@@ -19,11 +19,7 @@ export function setupWaitlistForm(form, apiBaseUrl, request = fetch) {
     event.preventDefault();
     if (submitting || !base) return;
     if (!form.reportValidity()) return;
-    if (!consent.checked) {
-      message('Please agree to WhatsApp early-access updates before joining.', 'error');
-      return;
-    }
-    const payload = { business_type: business.value.trim(), whatsapp: whatsapp.value.trim(), consent: consent.checked };
+    const payload = { name: name.value.trim(), business_type: business.value.trim(), whatsapp: whatsapp.value.trim() };
     submitting = true;
     fields.forEach((field) => { field.disabled = true; });
     form.setAttribute('aria-busy', 'true');
@@ -43,7 +39,7 @@ export function setupWaitlistForm(form, apiBaseUrl, request = fetch) {
       });
       if (!response.ok) {
         if (response.status === 400 || response.status === 422) {
-          message('Check your business type and enter a valid Indian mobile number, with +91 if needed.', 'error');
+          message('Check your name and business type, then enter a valid Indian mobile number, with +91 if needed.', 'error');
         } else if (response.status === 429) {
           message('Too many attempts. Please wait a little before trying again.', 'error');
         } else {

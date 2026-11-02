@@ -24,7 +24,7 @@ from app.main import app
 from app.models.waitlist import WaitlistEntry
 from app.waitlist_main import app as public_waitlist_app
 
-VALID = {"business_type": "Salon & hair studio", "whatsapp": "9876543210", "consent": True}
+VALID = {"name": "Asha", "business_type": "Salon & hair studio", "whatsapp": "9876543210"}
 ORIGIN = "http://127.0.0.1:4173"
 
 
@@ -82,13 +82,18 @@ async def client(isolated_db):
 async def test_registration_inserts_only_waitlist_and_normalizes(client, isolated_db):
     response = await client.post(
         "/api/v1/waitlist",
-        json={"business_type": " Salon & hair studio ", "whatsapp": " +91 98765-43210 ", "consent": True},
+        json={
+            "name": " Asha ",
+            "business_type": " Salon & hair studio ",
+            "whatsapp": " +91 98765-43210 ",
+        },
     )
     assert response.status_code == 200
     assert response.json() == {"accepted": True}
     assert response.headers["cache-control"] == "no-store"
     entry = isolated_db.session.scalar(select(WaitlistEntry))
     assert entry.whatsapp == "+919876543210"
+    assert entry.name == "Asha"
     assert entry.business_type == VALID["business_type"]
     assert entry.id and entry.created_at
     assert entry.consented_at
@@ -103,12 +108,14 @@ async def test_registration_inserts_only_waitlist_and_normalizes(client, isolate
 async def test_duplicate_formats_leave_one_original_entry(client, isolated_db):
     first = await client.post("/api/v1/waitlist", json=VALID)
     repeated = await client.post(
-        "/api/v1/waitlist", json={"business_type": "Other", "whatsapp": "+91 98765 43210", "consent": True}
+        "/api/v1/waitlist",
+        json={"name": "Other name", "business_type": "Other", "whatsapp": "+91 98765 43210"},
     )
     assert first.status_code == repeated.status_code == 200
     assert first.json() == repeated.json() == {"accepted": True}
     assert isolated_db.session.scalar(select(func.count()).select_from(WaitlistEntry)) == 1
     assert isolated_db.session.scalar(select(WaitlistEntry.business_type)) == VALID["business_type"]
+    assert isolated_db.session.scalar(select(WaitlistEntry.name)) == VALID["name"]
 
 
 @pytest.mark.parametrize(
@@ -117,8 +124,11 @@ async def test_duplicate_formats_leave_one_original_entry(client, isolated_db):
         {},
         {"business_type": "Other"},
         {"whatsapp": VALID["whatsapp"]},
-        {"business_type": VALID["business_type"], "whatsapp": VALID["whatsapp"]},
-        {**VALID, "consent": False},
+        {**VALID, "name": ""},
+        {**VALID, "name": " "},
+        {**VALID, "name": "x" * 121},
+        {**VALID, "name": 123},
+        {**VALID, "consent": True},
         {**VALID, "whatsapp": "bad-phone"},
         {**VALID, "whatsapp": "1234567890"},
         {**VALID, "whatsapp": "+14155552671"},
@@ -155,6 +165,15 @@ async def test_invalid_payloads_never_insert(client, isolated_db, payload):
 async def test_all_displayed_business_types_and_no_extra_personal_fields(client, business_type):
     result = await client.post("/api/v1/waitlist", json={**VALID, "business_type": business_type})
     assert result.status_code == 200
+
+
+async def test_old_form_payload_can_submit_during_rollout(client, isolated_db):
+    result = await client.post(
+        "/api/v1/waitlist",
+        json={"business_type": VALID["business_type"], "whatsapp": VALID["whatsapp"]},
+    )
+    assert result.status_code == 200
+    assert isolated_db.session.scalar(select(WaitlistEntry.name)) is None
 
 
 @pytest.mark.parametrize("stage", ["execute", "commit", "connect"])
@@ -275,7 +294,7 @@ def test_new_migration_only_creates_or_removes_waitlist_table():
     assert migration.down_revision == "e82f3b0125cd"
     config = Config()
     config.set_main_option("script_location", str(path.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["f93a4c1236de"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["a7d8c9012f34"]
     actions = [(migration.upgrade, "CREATE TABLE"), (migration.downgrade, "DROP TABLE")]
     for method, keyword in actions:
         output = StringIO()
@@ -288,4 +307,27 @@ def test_new_migration_only_creates_or_removes_waitlist_table():
         assert f"{keyword} waitlist_entries" in sql
         assert sql.count(keyword) == 1
         assert "ALTER TABLE" not in sql
+        assert "bookings" not in sql and "payment" not in sql and "merchants" not in sql
+
+
+def test_name_migration_only_changes_waitlist_table():
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "alembic/versions/a7d8c9012f34_add_waitlist_name.py"
+    )
+    spec = importlib.util.spec_from_file_location("waitlist_name_migration", path)
+    migration = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(migration)
+    assert migration.down_revision == "f93a4c1236de"
+    actions = [(migration.upgrade, "ADD COLUMN"), (migration.downgrade, "DROP COLUMN")]
+    for method, keyword in actions:
+        output = StringIO()
+        context = MigrationContext.configure(
+            dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+        )
+        with Operations.context(context):
+            method()
+        sql = output.getvalue()
+        assert f"ALTER TABLE waitlist_entries {keyword} name" in sql
+        assert sql.count("ALTER TABLE") == 1
         assert "bookings" not in sql and "payment" not in sql and "merchants" not in sql
