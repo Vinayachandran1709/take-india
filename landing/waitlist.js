@@ -54,7 +54,7 @@ export function setupWaitlistForm(form, apiBaseUrl, request = fetch) {
       const result = await response.json();
       if (result?.accepted !== true) throw new Error('Registration was not acknowledged.');
       form.reset();
-      message('You’re on the early-access list. Thank you for your interest in typein.', 'success');
+      message('You’re on the waitlist! Your details were submitted successfully. We’ll contact you on WhatsApp about typein early access.', 'success');
       // Optional future analytics hook: waitlist_submitted, only after API acceptance.
     } catch {
       message('We couldn’t confirm your registration. Please try again; repeated requests won’t create another entry.', 'error');
