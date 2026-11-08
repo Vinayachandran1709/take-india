@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     allow_test_database_reset: bool = False
     credential_encryption_key: SecretStr | None = None
     public_api_url: str = "http://localhost:8000"
+    whatsapp_phone_number_id: str | None = None
+    whatsapp_business_account_id: str | None = None
+    whatsapp_api_token: SecretStr | None = None
+    whatsapp_api_version: str = "v26.0"
 
     jwt_secret_key: SecretStr | None = None
     jwt_algorithm: str = "HS256"

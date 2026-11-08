@@ -20,8 +20,8 @@ from app.api.v1.waitlist import waitlist_database
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.waitlist_rate_limit import WaitlistRateLimiter
-from app.main import app
 from app.models.waitlist import WaitlistEntry
+from app.phase2_main import app
 from app.waitlist_main import app as public_waitlist_app
 
 VALID = {"name": "Asha", "business_type": "Salon & hair studio", "whatsapp": "9876543210"}
@@ -313,7 +313,7 @@ def test_new_migration_only_creates_or_removes_waitlist_table():
     assert migration.down_revision == "e82f3b0125cd"
     config = Config()
     config.set_main_option("script_location", str(path.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["a7d8c9012f34"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["c6b2e4d9108a"]
     actions = [(migration.upgrade, "CREATE TABLE"), (migration.downgrade, "DROP TABLE")]
     for method, keyword in actions:
         output = StringIO()

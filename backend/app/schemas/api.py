@@ -144,6 +144,9 @@ class ServiceValues(ApiModel):
     duration_minutes: int | None = None
     max_capacity: int | None = None
     prep_lead_time_hours: int | None = None
+    reschedule_cutoff_hours: int | None = Field(default=None, ge=0)
+    allow_cancellations: bool = False
+    cancel_cutoff_hours: int = Field(default=0, ge=0)
     is_active: bool = True
     staff_member_ids: list[uuid.UUID] = Field(default_factory=list)
 
@@ -178,6 +181,9 @@ class ServiceUpdate(ApiModel):
     duration_minutes: int | None = None
     max_capacity: int | None = None
     prep_lead_time_hours: int | None = None
+    reschedule_cutoff_hours: int | None = Field(default=None, ge=0)
+    allow_cancellations: bool | None = None
+    cancel_cutoff_hours: int | None = Field(default=None, ge=0)
     is_active: bool | None = None
     staff_member_ids: list[uuid.UUID] | None = None
 
@@ -193,6 +199,9 @@ class ServiceOut(ApiModel):
     duration_minutes: int | None
     max_capacity: int | None
     prep_lead_time_hours: int | None
+    reschedule_cutoff_hours: int | None
+    allow_cancellations: bool
+    cancel_cutoff_hours: int
     is_active: bool
     staff_member_ids: list[uuid.UUID] = Field(default_factory=list)
     created_at: datetime
@@ -322,6 +331,9 @@ class PublicServiceOut(ApiModel):
     duration_minutes: int | None
     max_capacity: int | None
     prep_lead_time_hours: int | None
+    reschedule_cutoff_hours: int | None
+    allow_cancellations: bool
+    cancel_cutoff_hours: int
     custom_fields: list[CustomFieldOut]
 
 
@@ -355,6 +367,7 @@ class BookingInitiateRequest(ApiModel):
 
 class BookingInitiateResponse(ApiModel):
     public_booking_token: str | None = None
+    management_token: str | None = None
     booking_reference: str
     booking_status: str
     payment_status: str
@@ -365,4 +378,4 @@ class BookingInitiateResponse(ApiModel):
     batch_schedule_id: uuid.UUID | None
     amount_to_pay: Decimal
     currency: str = "INR"
-    hold_expires_at: datetime
+    hold_expires_at: datetime | None

@@ -26,12 +26,11 @@ export default async function ServicePage({
           <section className="lg:sticky lg:top-8">
             <span className="rounded-full bg-[#fff1d7] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#80570f]">{service.booking_mode.replace("_", " ")}</span>
             <h1 className="mt-5 text-4xl font-bold tracking-[-0.04em]">{service.title}</h1>
-            <p className="mt-4 leading-7 text-[var(--muted)]">{service.description ?? "Choose your preferred date and we’ll hold it for you."}</p>
+            <p className="mt-4 leading-7 text-[var(--muted)]">{service.description ?? "Choose an available time and confirm your booking."}</p>
             <div className="mt-7 flex flex-wrap gap-3 text-sm font-semibold">
               <span className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2"><BadgeIndianRupee size={17} />{rupees(service.price)}</span>
               <span className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2"><Clock3 size={17} />{service.duration_minutes ? `${service.duration_minutes} minutes` : service.booking_mode === "CUSTOM_ORDER" ? `${service.prep_lead_time_hours ?? 0}h lead time` : "Fixed schedule"}</span>
             </div>
-            {Number(service.advance_token_amount) > 0 && <p className="mt-4 text-sm text-[var(--muted)]">A {rupees(service.advance_token_amount)} advance will be due when payments arrive in Phase 2.</p>}
           </section>
           <BookingForm slug={slug} service={service} />
         </div>

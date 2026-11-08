@@ -144,6 +144,7 @@ async def appointment_resource(
     start_time: time,
     end_time: time,
     now_utc: datetime,
+    exclude_booking_id: uuid.UUID | None = None,
 ) -> uuid.UUID | None:
     assigned_ids = list(
         await db.scalars(
@@ -184,6 +185,7 @@ async def appointment_resource(
             end_time=end_time,
             now_utc=now_utc,
             staff_member_id=staff.id,
+            exclude_booking_id=exclude_booking_id,
         ):
             raise AppError("SLOT_UNAVAILABLE", "The requested slot is unavailable", 409)
         return staff.id
@@ -204,6 +206,7 @@ async def appointment_resource(
             end_time=end_time,
             now_utc=now_utc,
             staff_member_id=None,
+            exclude_booking_id=exclude_booking_id,
         ):
             raise AppError("SLOT_UNAVAILABLE", "The requested slot is unavailable", 409)
         return None
@@ -236,6 +239,7 @@ async def appointment_resource(
             end_time=end_time,
             now_utc=now_utc,
             staff_member_id=staff.id,
+            exclude_booking_id=exclude_booking_id,
         ):
             return staff.id
     raise AppError("SLOT_UNAVAILABLE", "The requested slot is unavailable", 409)
@@ -453,3 +457,24 @@ async def initiate_booking(
         payload.booking_date,
         reference_factory,
     )
+
+
+async def confirm_booking_without_payment(
+    db: AsyncSession,
+    payload: BookingInitiateRequest,
+    *,
+    clock: Clock = utc_now,
+    reference_factory: ReferenceFactory = generate_booking_reference,
+) -> Booking:
+    """Reserve and confirm in one transaction; the caller commits both together."""
+    booking = await initiate_booking(
+        db, payload, clock=clock, reference_factory=reference_factory
+    )
+    booking.booking_status = BookingStatus.CONFIRMED
+    booking.hold_expires_at = None
+    booking.amount_to_pay = Decimal("0.00")
+    # PENDING records unpaid offline pricing in the legacy payment-status column.
+    # This V1 path never creates a provider order or treats the booking as paid.
+    customer = await db.get(Customer, booking.customer_id)
+    customer.total_bookings_count += 1
+    return booking

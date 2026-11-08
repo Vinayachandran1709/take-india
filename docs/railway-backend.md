@@ -1,87 +1,116 @@
-# Railway backend with existing Neon PostgreSQL
+# Railway removal status
 
-Railway hosts only FastAPI. Neon remains the source of truth. The Railway
-environment is named `production`, but its database is the existing Neon
-development branch, as explicitly requested. No database data is copied.
+Railway deployment support has been removed from the repository. On 2026-10-13
+(India time), the backend service and its domain were deleted after preserving
+its environment settings. The local backend directory's Railway CLI link was
+also removed. No replacement hosting has been configured.
 
-## Railway resources
+The user explicitly required that no database be deleted or changed. The
+Railway Postgres service, its volume, and their containing project/environment
+are therefore retained. Neon was not accessed or changed. Railway removal is
+not complete while this database storage remains; charges are not confirmed
+stopped.
 
-- Project: `take-india` (`4c4826a8-0f8d-4ca3-8414-9f0cec36fed7`)
-- Environment: `production` (`a6c41c6a-c254-430f-8a66-e1397afe3c6d`)
-- Backend: `e68558d0-72b7-448a-b3e5-3311c39a3a8b`
-- Build: `backend/Dockerfile`, Python 3.13, non-root runtime user
-- Start: Uvicorn on `0.0.0.0:$PORT`
-- Railway health check: `/health`
-- Normal pre-deploy command: `alembic current` (read-only)
+## Repository cleanup
 
-Variables are stored in Railway, not in the image or repository:
+- Removed `backend/.railwayignore` and the Railway upload instructions.
+- Removed the hardcoded Railway API default from `scripts/deploy-vercel.ps1`.
+  Future Vercel deployments require an explicit working `-ApiUrl`.
+- Preserved `backend/Dockerfile`, `.dockerignore`, and `deployment/verify.py`:
+  they support a generic Python/Uvicorn container and a Neon-specific read-only
+  Phase 1 check without requiring Railway.
+- No Railway SDK, repository CI/CD workflow, `railway.json`, `railway.toml`,
+  Railpack/Nixpacks configuration file, or application-code dependency was found.
+- Local backend environment files use external Neon endpoints; frontend local
+  environment files use localhost. No Railway references were found in those
+  files, and their values were left unchanged.
 
-| Variable | Value/source |
-| --- | --- |
-| DATABASE_URL | Existing Neon pooled development URL from local backend/.env |
-| DIRECT_DATABASE_URL | Existing Neon direct development URL from local backend/.env |
-| ENVIRONMENT | production |
-| ALLOW_TEST_DATABASE_RESET | false |
-| TEST_DATABASE_URL | Not configured |
-| JWT_SECRET_KEY | Newly generated secret stored directly in Railway |
-| JWT_ALGORITHM | HS256 |
-| ACCESS_TOKEN_EXPIRE_MINUTES | 60 |
-| APP_TIMEZONE | Asia/Kolkata |
-| BOOKING_HOLD_MINUTES | 10 |
-| CORS_ORIGINS | http://localhost:3000,http://localhost:5173 |
+## Remaining account resources
 
-Frontend domains can be added to CORS when those applications are deployed.
-This deployment uploads the local backend directory; GitHub autodeploy is not
-connected. No commits or pushes were performed.
+Post-deletion Railway inspection on 2026-10-13 (India time) confirmed one
+environment, one remaining service (Postgres), one volume, no buckets, and no
+staged changes. Postgres remains **offline**, with its original volume attached.
+The backend is absent. An offline status is not confirmation of zero charges.
 
-## Verified deployment
+| Resource | Name / ID | Observed configuration |
+| --- | --- | --- |
+| Project | `take-india` / `4c4826a8-0f8d-4ca3-8414-9f0cec36fed7` | Retained to preserve the database |
+| Environment | `production` / `a6c41c6a-c254-430f-8a66-e1397afe3c6d` | Retained to preserve the database |
+| Backend service | `backend` / `e68558d0-72b7-448a-b3e5-3311c39a3a8b` | Deleted; had no attached volumes |
+| Database service | `Postgres` / `23340ee8-0a73-486a-aea8-780c71d0dcad` | Preserved unchanged; offline; PostgreSQL 18 image; no public domain or TCP proxy |
+| Persistent volume | `postgres-volume` / `21d5b058-a8fb-451a-aabd-6c659349faff` | 5000 MB provisioned in `us-west2`; mounted on Postgres at `/var/lib/postgresql/data` |
+| Backend domain | `backend-production-b809.up.railway.app` / `13d68e4c-39d6-434b-8153-324ac0b8a24d` | Removed with the backend service |
 
-Deployment `b2036da7-0a27-4183-ab93-060b92e0b50f` succeeded on 2026-09-11 IST.
-Its read-only pre-deploy verification passed for Neon direct connectivity,
-schema `cbdbf24900c6`, reset guards, health/docs/OpenAPI, and all three seeded
-storefronts and booking-mode availability calls through the Neon pooled URL.
-Railway then started Uvicorn and received HTTP 200 on its runtime health check.
-The normal pre-deploy setting was restored to `alembic current` afterward.
+## Preserved backend settings
 
-Public domain creation is pending explicit user approval after automatic
-approval review rejected public internet exposure. No external URL has been
-created or externally verified.
+Before deletion, all 21 rendered backend variables were saved to the Git-ignored
+file `backend/.env.railway-backend-backup.clixml`. It contains an encrypted
+SecureString holding the variables as JSON, including the JWT secret, database
+connection settings, CORS settings, and the old injected Railway variables.
+The backup was imported, decrypted, and compared with the original in memory
+before deletion; no secret values were printed or added to Git. This is a
+configuration backup, not a database backup.
 
-## Deploy from PowerShell
+PowerShell's Windows encryption binds this backup to the Windows account and
+computer that created it. Keep it available for future configuration recovery;
+`Import-Clixml` under that account returns the SecureString. Do not overwrite
+local `.env` files with it or reuse obsolete Railway-injected variables for a
+future host. Existing local environment files were verified unchanged.
 
-```powershell
-Set-Location 'C:\Github folder\take-india\backend'
-railway.cmd up . --path-as-root --project 4c4826a8-0f8d-4ca3-8414-9f0cec36fed7 --environment a6c41c6a-c254-430f-8a66-e1397afe3c6d --service e68558d0-72b7-448a-b3e5-3311c39a3a8b --detach
+The retired service used `Dockerfile`, health check `/health` with a 120-second
+timeout, three restart retries, one `us-west2` replica, and the read-only
+pre-deploy command `alembic current`. Its domain routed to container port 8080.
+There was no GitHub source connection, attached volume, or staged change.
+
+## Known dependencies and shutdown impact
+
+Before deletion, the backend's `DATABASE_URL` and `DIRECT_DATABASE_URL` were
+confirmed to reference external Neon hosts by inspecting configuration only.
+No connection to Neon or any other database was opened. The earlier deployment
+record identifies this as the original Neon development branch despite the
+environment name `production`.
+
+That record says Railway Postgres was left behind after an earlier deployment
+initialized a Phase 1 schema there. Its database and volume remain intact;
+their contents were not read, exported, reset, or changed. All external Neon
+databases must also remain intact.
+
+The Vercel storefront and dashboard were previously configured with:
+
+```text
+https://backend-production-b809.up.railway.app/api/v1
 ```
 
-The upload and Docker ignore files exclude local credentials and the virtual
-environment. Deploy settings are stored on the Railway service. Database
-migrations are not run automatically against Neon.
+Their respective variables are `NEXT_PUBLIC_API_URL` and `VITE_API_URL`. Remote
+Vercel settings were not changed or re-verified. The endpoint above is now
+retired: clients still using it have no working backend. The service was already
+reported offline before removal. There is no replacement endpoint. Local
+development continues using localhost and Neon.
 
-`python -m deployment.verify` is an optional, read-only acceptance command for
-the seeded Phase 1 dataset. It checks Neon URL shape, reset guards, schema head,
-health/docs/OpenAPI through ASGI, and seeded storefront/availability reads.
-It assumes the three demo merchants still exist and uses 2030-01-07 for
-availability. It is not a general-purpose production readiness check.
+## Remaining work outside this removal
 
-## Unused Railway Postgres cleanup
+1. Preserve the Railway Postgres service, its volume, and the containing
+   project/environment. Their deletion is not authorized. Fully leaving Railway
+   while retaining that database requires a separately authorized data
+   preservation/migration plan. No database export or recovery was attempted.
+2. During the later hosting migration, configure the new API URL in the Vercel
+   projects and any external consumers or callbacks before rebuilding clients.
+   No Vercel deployments, Google setup, or Razorpay settings were changed here.
+3. Retained storage may continue to incur Railway charges. Review usage/billing
+   without deleting the protected database or volume. Other Railway projects
+   and the shared CLI installation remain outside this project's cleanup.
 
-The earlier interrupted deployment continued and initialized a Phase 1 schema
-in Railway Postgres. The backend variables have since been replaced with the
-existing Neon URLs. The Railway Postgres service was left in place at the
-user's request.
+## Historical verification retained
 
-After confirming the active backend uses Neon:
+Deployment `b2036da7-0a27-4183-ab93-060b92e0b50f` succeeded on 2026-09-11 IST.
+The prior record reports successful Neon connectivity, Phase 1 schema
+`cbdbf24900c6`, reset guards, and seeded storefront/availability reads.
+Public HTTPS was subsequently enabled with explicit user approval; external
+checks passed for `/health`, `/docs`, `/openapi.json`, and all three seeded
+storefronts and their availability endpoints, without creating bookings.
+Deployment `d7130d3f-8bc4-4d38-aa48-9e656409c784` later applied the Vercel CORS
+origins. These are historical results, not current availability guarantees.
 
-1. Open the Take-India project and confirm backend variables point to Neon,
-   with no `${{Postgres...}}` references.
-2. Select only `Postgres` (`23340ee8-0a73-486a-aea8-780c71d0dcad`) and use the
-   service deletion action. Do not delete the project or backend service.
-3. Review any retained volume named `postgres-volume`
-   (`21d5b058-a8fb-451a-aabd-6c659349faff`). If no data in this newly created
-   Railway database is needed, delete that volume separately. Volume deletion
-   permanently removes its data; export anything needed first.
-4. Recheck backend health and an existing Neon storefront.
-
-Leaving the unused database running can continue to incur Railway charges.
-Deleting it does not delete the external Neon database.
+The preserved `deployment.verify` helper assumes the original Phase 1 revision,
+three demo merchants, and availability on 2030-01-07. It is not a general-purpose
+production readiness check or a Phase 2 schema check.

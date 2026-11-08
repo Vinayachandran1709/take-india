@@ -53,7 +53,7 @@ configuration. Preserve existing `CORS_ORIGINS` and append
 
 ```cmd
 cd /d "C:\Github folder\take-india\backend"
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python.exe -m uvicorn app.waitlist_main:app --host 127.0.0.1 --port 8000
 ```
 
 In a second terminal, from `landing/`:

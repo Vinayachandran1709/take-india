@@ -91,6 +91,11 @@ class Service(TimestampMixin, Base):
         CheckConstraint("advance_token_amount >= 0", name="advance_nonnegative"),
         CheckConstraint("advance_token_amount <= price", name="advance_not_above_price"),
         CheckConstraint(
+            "reschedule_cutoff_hours IS NULL OR reschedule_cutoff_hours >= 0",
+            name="reschedule_cutoff_nonnegative",
+        ),
+        CheckConstraint("cancel_cutoff_hours >= 0", name="cancel_cutoff_nonnegative"),
+        CheckConstraint(
             "booking_mode <> 'APPOINTMENT' OR "
             "(duration_minutes IS NOT NULL AND duration_minutes > 0)",
             name="appointment_duration",
@@ -124,6 +129,15 @@ class Service(TimestampMixin, Base):
     duration_minutes: Mapped[int | None] = mapped_column(Integer)
     max_capacity: Mapped[int | None] = mapped_column(Integer)
     prep_lead_time_hours: Mapped[int | None] = mapped_column(Integer)
+    # A null reschedule cutoff disables self-service rescheduling. Existing services
+    # start with both customer-managed actions disabled until the owner opts in.
+    reschedule_cutoff_hours: Mapped[int | None] = mapped_column(Integer)
+    allow_cancellations: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
+    cancel_cutoff_hours: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     merchant: Mapped[Merchant] = relationship(back_populates="services")
@@ -282,6 +296,7 @@ class Booking(TimestampMixin, Base):
             name="fk_bookings_batch_tenant",
         ),
         UniqueConstraint("booking_reference", name="uq_bookings_reference"),
+        UniqueConstraint("management_token_hash", name="uq_bookings_management_token_hash"),
         UniqueConstraint("id", "merchant_id", name="uq_booking_id_merchant"),
         CheckConstraint("start_time < end_time", name="valid_interval"),
         CheckConstraint("total_amount >= 0", name="total_nonnegative"),
@@ -323,6 +338,8 @@ class Booking(TimestampMixin, Base):
     razorpay_order_id: Mapped[str | None] = mapped_column(String(255))
     razorpay_payment_id: Mapped[str | None] = mapped_column(String(255))
     public_token_hash: Mapped[str | None] = mapped_column(String(64))
+    # Store only a digest of the future bearer link, never its raw token.
+    management_token_hash: Mapped[str | None] = mapped_column(String(64))
     amount_paid: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=Decimal("0"), server_default="0"
     )

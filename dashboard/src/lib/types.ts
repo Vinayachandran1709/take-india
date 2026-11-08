@@ -25,6 +25,9 @@ export type Service = {
   duration_minutes: number | null
   max_capacity: number | null
   prep_lead_time_hours: number | null
+  allow_cancellations: boolean
+  reschedule_cutoff_hours: number | null
+  cancel_cutoff_hours: number
   is_active: boolean
   staff_member_ids: string[]
 }
@@ -37,6 +40,24 @@ export type CustomField = {
   options: string[] | null
   is_required: boolean
   display_order: number
+}
+
+export type AgendaBooking = {
+  booking_reference: string
+  booking_date: string
+  start_time: string
+  end_time: string
+  booking_status: 'CONFIRMED'
+  service_title: string
+  customer_name: string
+  customer_phone: string
+}
+
+export type AgendaResponse = {
+  today: string
+  tomorrow: string
+  timezone: string
+  bookings: AgendaBooking[]
 }
 
 export type OperatingHour = {

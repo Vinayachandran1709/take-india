@@ -1,11 +1,12 @@
 # Phase 2: Razorpay Test payments
 
-This branch implements local Test Mode payments only. Railway, its connected Neon branch,
-and the unused Railway PostgreSQL service must remain unchanged. Phase 3 is excluded.
+This branch implements local Test Mode payments only. The original Phase 1 Neon branch
+and existing hosted services must remain unchanged during local payment development.
+Phase 3 is excluded.
 
 ## Local setup
 
-1. Create a separate Neon branch named `phase2-dev`. Do not reuse the Railway branch.
+1. Create a separate Neon branch named `phase2-dev`. Do not reuse the original Phase 1 branch.
 2. Create untracked `backend/.env.phase2` from `.env.example`. Set `DATABASE_URL` to
    its pooled URL and `DIRECT_DATABASE_URL` to its direct URL. Copy the local JWT
    settings. Keep the existing `.env` intact. Confirm in Neon that these URLs belong

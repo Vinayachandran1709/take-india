@@ -31,12 +31,12 @@ export default function Home() {
             <Sparkles aria-hidden="true" size={21} />
           </span>
           <div>
-            <p className="text-lg font-bold tracking-tight">Take-India</p>
+            <p className="text-lg font-bold tracking-tight">typein</p>
             <p className="text-sm text-[var(--muted)]">Local bookings, made simple</p>
           </div>
         </div>
         <span className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--brand)]">
-          Phase 1
+          Book a service
         </span>
       </header>
 
@@ -50,8 +50,7 @@ export default function Home() {
           </h1>
         </div>
         <p className="max-w-xl text-base leading-7 text-[var(--muted)] sm:text-lg">
-          Choose a service, find a time that works, and hold your booking securely. Payments
-          will be connected in Phase 2.
+          Choose a service, find an available time, and confirm your booking in a few taps.
         </p>
       </section>
 
@@ -89,7 +88,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-12 border-t border-[var(--border)] py-6 text-sm text-[var(--muted)]">
-        Booking, payment and reputation tools for Indian local businesses.
+        Simple bookings for local service businesses.
       </footer>
     </main>
   );

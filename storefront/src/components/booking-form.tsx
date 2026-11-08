@@ -2,9 +2,10 @@
 
 import axios from "axios";
 import { CalendarDays, CheckCircle2, Clock3, LoaderCircle, Users } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-import { apiBaseUrl, rupees } from "@/lib/api";
+import { apiBaseUrl } from "@/lib/api";
 import type {
   Availability,
   AvailabilitySlot,
@@ -58,9 +59,6 @@ export function BookingForm({ slug, service }: { slug: string; service: Service 
   }, [bookingDate, service.id, slug]);
 
   const slots = availability?.available_slots ?? [];
-  const payable = Number(service.advance_token_amount) > 0
-    ? service.advance_token_amount
-    : service.price;
   const canSubmit = useMemo(() => {
     if (!name.trim() || !phone.trim()) return false;
     if (service.booking_mode === "CUSTOM_ORDER") return Boolean(customStart && customEnd);
@@ -104,10 +102,10 @@ export function BookingForm({ slug, service }: { slug: string; service: Service 
         setError(
           code === "SLOT_UNAVAILABLE" || code === "BATCH_FULL"
             ? "That option was just taken. Refresh availability and choose another."
-            : requestError.response?.data?.error?.message ?? "We could not hold this booking.",
+            : requestError.response?.data?.error?.message ?? "We could not confirm this booking.",
         );
       } else {
-        setError("We could not hold this booking.");
+        setError("We could not confirm this booking.");
       }
     } finally {
       setSubmitting(false);
@@ -119,22 +117,20 @@ export function BookingForm({ slug, service }: { slug: string; service: Service 
       <section className="rounded-3xl border border-[#b8dbc8] bg-[#f3fbf6] p-6 shadow-sm sm:p-8">
         <CheckCircle2 className="text-[var(--brand)]" size={38} aria-hidden="true" />
         <p className="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-[var(--brand)]">
-          Booking held
+          Booking confirmed!
         </p>
         <h2 className="mt-2 text-3xl font-bold tracking-tight">{result.booking_reference}</h2>
         <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
           <div><dt className="text-[var(--muted)]">Date</dt><dd className="mt-1 font-semibold">{result.booking_date}</dd></div>
           <div><dt className="text-[var(--muted)]">Time</dt><dd className="mt-1 font-semibold">{shortTime(result.start_time)}–{shortTime(result.end_time)}</dd></div>
-          <div><dt className="text-[var(--muted)]">Amount due</dt><dd className="mt-1 font-semibold">{rupees(result.amount_to_pay)}</dd></div>
-          <div><dt className="text-[var(--muted)]">Hold expires</dt><dd className="mt-1 font-semibold">{new Date(result.hold_expires_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</dd></div>
         </dl>
         <p className="mt-6 rounded-2xl bg-white p-4 text-sm leading-6 text-[var(--muted)]">
-          Complete your Test Mode payment before the hold expires to confirm your booking.
+          Booking Confirmed! You will receive a WhatsApp message shortly.
         </p>
-        <a className="mt-5 inline-block rounded-xl bg-[var(--brand)] px-5 py-3 font-bold text-white"
-          href={`/booking/${encodeURIComponent(result.booking_reference)}#${encodeURIComponent(result.public_booking_token)}`}>
-          Continue to payment
-        </a>
+        {result.management_token && <Link className="mt-5 inline-block rounded-xl bg-[var(--brand)] px-5 py-3 font-bold text-white"
+          href={`/manage/${encodeURIComponent(result.management_token)}`}>
+          View or manage this booking
+        </Link>}
       </section>
     );
   }
@@ -195,7 +191,7 @@ export function BookingForm({ slug, service }: { slug: string; service: Service 
 
       {error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
       <button type="submit" disabled={!canSubmit || submitting} className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] font-bold text-white shadow-lg transition hover:bg-[#0b583c] disabled:cursor-not-allowed disabled:opacity-50">
-        {submitting ? <><LoaderCircle className="animate-spin" size={19} /> Creating hold…</> : <><Clock3 size={19} /> Hold booking · {rupees(payable)}</>}
+        {submitting ? <><LoaderCircle className="animate-spin" size={19} /> Confirming booking…</> : <><Clock3 size={19} /> Confirm booking</>}
       </button>
     </form>
   );

@@ -1,7 +1,9 @@
 param(
   [ValidateSet("storefront", "dashboard", "all")]
   [string] $Target = "all",
-  [string] $ApiUrl = "https://backend-production-b809.up.railway.app/api/v1",
+  [Parameter(Mandatory = $true)]
+  [ValidateNotNullOrEmpty()]
+  [string] $ApiUrl,
   [switch] $Preview
 )
 

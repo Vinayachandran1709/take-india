@@ -23,4 +23,16 @@ Thumbs.db
 .vscode/
 .idea/
 
+*.env
+.env.local
+.vercel/
+build/
+*.pyc
+.venv/
+venv/
+*.pem
+*.key
+*.p12
+*.sqlite
+
 *.log

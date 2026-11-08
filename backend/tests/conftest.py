@@ -10,7 +10,7 @@ from app.api.dependencies import get_clock
 from app.core.config import get_settings
 from app.core.database import create_database_engine, get_db
 from app.core.test_safety import assert_test_database_safe
-from app.main import app
+from app.phase2_main import app
 
 FIXED_NOW = datetime(2030, 1, 6, 0, 0, tzinfo=UTC)
 

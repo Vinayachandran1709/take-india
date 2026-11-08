@@ -5,11 +5,10 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { clearAccessToken } from '../lib/auth'
 
 const links = [
-  { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Agenda', icon: LayoutDashboard, end: true },
   { to: '/dashboard/services', label: 'Services', icon: Store },
   { to: '/dashboard/schedules', label: 'Schedules', icon: CalendarRange },
   { to: '/dashboard/settings', label: 'Settings', icon: Settings },
-  { to: '/dashboard/payments', label: 'Test payments', icon: Store },
 ]
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -18,7 +17,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="min-h-svh bg-[#f4f7f5] lg:grid lg:grid-cols-[250px_1fr]">
       <aside className="border-b border-[#dce4df] bg-[#123c2d] p-4 text-white lg:min-h-svh lg:border-b-0 lg:p-6">
         <div className="flex items-center justify-between lg:block">
-          <div className="flex items-center gap-3 font-bold"><span className="grid size-10 place-items-center rounded-xl bg-[#f2a92f] text-[#123c2d]"><Sparkles size={19} /></span>Take-India</div>
+          <div className="flex items-center gap-3 font-bold"><span className="grid size-10 place-items-center rounded-xl bg-[#f2a92f] text-[#123c2d]"><Sparkles size={19} /></span>typein</div>
           <button onClick={() => { clearAccessToken(); navigate('/login') }} className="rounded-xl p-2 text-[#b9d4c7] hover:bg-white/10 lg:hidden" aria-label="Sign out"><LogOut size={19} /></button>
         </div>
         <nav className="mt-4 flex gap-2 overflow-x-auto lg:mt-10 lg:block lg:space-y-2">

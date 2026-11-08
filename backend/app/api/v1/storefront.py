@@ -79,6 +79,9 @@ async def get_storefront(slug: str, db: DatabaseSession) -> StorefrontResponse:
             duration_minutes=service.duration_minutes,
             max_capacity=service.max_capacity,
             prep_lead_time_hours=service.prep_lead_time_hours,
+            reschedule_cutoff_hours=service.reschedule_cutoff_hours,
+            allow_cancellations=service.allow_cancellations,
+            cancel_cutoff_hours=service.cancel_cutoff_hours,
             custom_fields=by_service[service.id],
         )
         for service in services

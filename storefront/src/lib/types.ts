@@ -60,16 +60,29 @@ export type Availability = {
 };
 
 export type BookingResult = {
-  public_booking_token: string;
+  management_token: string;
   booking_reference: string;
-  booking_status: "PENDING_PAYMENT";
-  payment_status: "PENDING";
+  booking_status: "CONFIRMED";
   booking_date: string;
   start_time: string;
   end_time: string;
   staff_member_id: string | null;
   batch_schedule_id: string | null;
-  amount_to_pay: string;
-  currency: "INR";
-  hold_expires_at: string;
+};
+
+export type ManagedBooking = {
+  booking_reference: string;
+  service_id: string;
+  merchant_id: string;
+  merchant_slug: string;
+  booking_mode: BookingMode;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  booking_status: "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW" | "EXPIRED" | "PENDING_PAYMENT";
+  service_title: string;
+  business_name: string;
+  timezone: string;
+  can_cancel: boolean;
+  can_reschedule: boolean;
 };

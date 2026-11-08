@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Take-India | Book trusted local businesses",
+  title: "typein | Book local services",
   description: "Book appointments, classes, and custom orders from local Indian businesses.",
 };
 

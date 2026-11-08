@@ -73,7 +73,7 @@ def main() -> None:
         return
     commands = {
         "migrate": ["alembic", "upgrade", "head"],
-        "serve": ["uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+        "serve": ["uvicorn", "app.phase2_main:app", "--host", "127.0.0.1", "--port", "8000"],
         "seed": ["scripts.seed"],
     }
     raise SystemExit(

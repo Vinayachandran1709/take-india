@@ -12,9 +12,9 @@ from app.api.dependencies import get_clock
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.security import create_access_token
-from app.main import app
 from app.models import BatchSchedule, Booking, Customer, MerchantPaymentConfig, PaymentTransaction
 from app.models.enums import BookingMode, BookingStatus
+from app.phase2_main import app
 from app.services.payments.gateway import AmbiguousOrder, RazorpayGateway, get_gateway
 from app.services.payments.security import decrypt, encrypt, to_paise
 from tests.conftest import FIXED_NOW
