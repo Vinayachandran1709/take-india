@@ -18,6 +18,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) clearAccessToken()
+    if (error.response?.data?.error?.code === 'subscription_required') {
+      window.dispatchEvent(new Event('typein:subscription-required'))
+      if (!window.location.pathname.startsWith('/dashboard/billing')) {
+        window.location.assign('/dashboard')
+      }
+    }
     return Promise.reject(error)
   },
 )

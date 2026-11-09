@@ -9,7 +9,29 @@ export type Merchant = {
   address: string | null
   timezone: string
   is_active: boolean
+  billing: BillingSummary | null
 }
+
+export type BillingSummary = {
+  effective_status: 'trialing' | 'active' | 'past_due' | 'expired' | 'cancelled'
+  trial_ends_at: string
+  days_left: number
+  current_period_end: string | null
+  cancel_at_period_end: boolean
+  locked: boolean
+  authorization_confirmed: boolean
+  processing: boolean
+}
+
+export type BillingPayment = {
+  razorpay_payment_id: string
+  amount_paise: number
+  currency: string
+  status: string
+  paid_at: string | null
+}
+
+export type BillingDetail = { summary: BillingSummary; payments: BillingPayment[] }
 
 export type Staff = { id: string; name: string; is_active: boolean; created_at: string }
 export type BookingMode = 'APPOINTMENT' | 'BATCH' | 'CUSTOM_ORDER'
