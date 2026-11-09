@@ -15,4 +15,4 @@ COPY deployment ./deployment
 RUN useradd --create-home appuser
 USER appuser
 
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "exec uvicorn ${ASGI_APP:-app.v1_main:app} --host 0.0.0.0 --port ${PORT:-8000}"]
