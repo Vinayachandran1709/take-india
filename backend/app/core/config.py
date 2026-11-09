@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     whatsapp_business_account_id: str | None = None
     whatsapp_api_token: SecretStr | None = None
     whatsapp_api_version: str = "v26.0"
+    resend_api_key: SecretStr | None = None
+    email_from: str | None = None
 
     jwt_secret_key: SecretStr | None = None
     jwt_algorithm: str = "HS256"
