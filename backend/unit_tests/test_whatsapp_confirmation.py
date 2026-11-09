@@ -175,6 +175,10 @@ async def test_whatsapp_task_runs_only_after_booking_commit(monkeypatch):
     monkeypatch.setattr(confirmed_bookings, "confirm_booking_without_payment", confirm)
     monkeypatch.setattr(confirmed_bookings, "get_notification_details", details)
     monkeypatch.setattr(confirmed_bookings, "send_booking_confirmation", send)
+    async def allow_booking(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(confirmed_bookings, "require_booking_access", allow_booking)
     app.dependency_overrides[get_db] = override_db
     try:
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

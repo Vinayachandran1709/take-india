@@ -10,14 +10,27 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import CurrentClock, DatabaseSession
+from app.core.exceptions import AppError
 from app.core.management_token import new_management_token
 from app.models import Customer, Merchant, Service
 from app.schemas.api import BookingInitiateRequest, BookingInitiateResponse
+from app.services.billing_service import billing_summary
 from app.services.booking_service import confirm_booking_without_payment
 from app.services.whatsapp_service import send_booking_confirmation
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 logger = logging.getLogger(__name__)
+
+
+async def require_booking_access(db: AsyncSession, service_id: UUID, now: datetime) -> None:
+    merchant = await db.scalar(
+        select(Merchant).join(Service, Service.merchant_id == Merchant.id)
+        .where(Service.id == service_id)
+    )
+    if merchant is not None and billing_summary(merchant, now)["locked"]:
+        raise AppError(
+            "subscription_required", "This business is not accepting bookings right now", 403
+        )
 
 
 async def get_notification_details(
@@ -52,6 +65,7 @@ async def create_confirmed_booking(
 ) -> BookingInitiateResponse:
     response.headers["Cache-Control"] = "no-store"
     async with db.begin():
+        await require_booking_access(db, payload.service_id, clock())
         booking = await confirm_booking_without_payment(db, payload, clock=clock)
         token, booking.management_token_hash = new_management_token()
     booking_response = BookingInitiateResponse.model_validate(booking).model_copy(

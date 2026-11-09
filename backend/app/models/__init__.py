@@ -1,4 +1,5 @@
 from app.models.base import Base
+from app.models.billing import BillingPayment, BillingWebhookEvent
 from app.models.entities import (
     BatchSchedule,
     Booking,
@@ -20,6 +21,8 @@ from app.models.waitlist import WaitlistEntry
 
 __all__ = [
     "Base",
+    "BillingPayment",
+    "BillingWebhookEvent",
     "BatchSchedule",
     "Booking",
     "Customer",

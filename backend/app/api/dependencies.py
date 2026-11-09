@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.core.exceptions import AppError
 from app.core.security import decode_access_token
 from app.models import Merchant
+from app.services.billing_service import billing_summary
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 DatabaseSession = Annotated[AsyncSession, Depends(get_db)]
@@ -35,3 +36,12 @@ async def get_current_merchant(
 
 
 CurrentMerchant = Annotated[Merchant, Depends(get_current_merchant)]
+
+
+async def require_billing_access(merchant: CurrentMerchant, clock: CurrentClock) -> None:
+    if billing_summary(merchant, clock())["locked"]:
+        raise AppError(
+            "subscription_required",
+            "A subscription is required to use this feature",
+            403,
+        )

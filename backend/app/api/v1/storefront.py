@@ -16,6 +16,7 @@ from app.schemas.api import (
     StorefrontResponse,
 )
 from app.services.availability_service import get_availability
+from app.services.billing_service import billing_summary
 
 router = APIRouter(prefix="/storefront", tags=["storefront"])
 
@@ -45,7 +46,7 @@ async def public_service(
 
 
 @router.get("/{slug}", response_model=StorefrontResponse)
-async def get_storefront(slug: str, db: DatabaseSession) -> StorefrontResponse:
+async def get_storefront(slug: str, db: DatabaseSession, clock: CurrentClock) -> StorefrontResponse:
     merchant = await public_merchant(slug, db)
     services = list(
         await db.scalars(
@@ -87,7 +88,9 @@ async def get_storefront(slug: str, db: DatabaseSession) -> StorefrontResponse:
         for service in services
     ]
     return StorefrontResponse(
-        merchant=PublicMerchantOut.model_validate(merchant),
+        merchant=PublicMerchantOut.model_validate(merchant).model_copy(
+            update={"accepting_bookings": not billing_summary(merchant, clock())["locked"]}
+        ),
         categories=sorted({service.category for service in services}),
         services=public_services,
     )

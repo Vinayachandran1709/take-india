@@ -2,12 +2,15 @@
 
 import logging
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.dependencies import require_billing_access
 from app.api.v1 import (
     agenda,
     auth,
+    billing,
+    billing_webhooks,
     confirmed_bookings,
     manage,
     merchants,
@@ -41,8 +44,13 @@ for router in (
     storefront.router,
     confirmed_bookings.router,
     manage.router,
+    billing.router,
+    billing_webhooks.router,
 ):
-    app.include_router(router, prefix="/api/v1")
+    if router in (agenda.router, services.router, staff.router, schedules.router):
+        app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_billing_access)])
+    else:
+        app.include_router(router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["system"])

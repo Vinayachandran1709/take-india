@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -24,6 +24,8 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.clock import utc_now
+from app.core.config import get_settings
 from app.models.base import Base, TimestampMixin
 from app.models.enums import (
     BookingMode,
@@ -43,6 +45,10 @@ class Merchant(TimestampMixin, Base):
     __table_args__ = (
         UniqueConstraint("slug", name="uq_merchants_slug"),
         UniqueConstraint("email", name="uq_merchants_email"),
+        CheckConstraint(
+            "subscription_status IN ('trialing', 'active', 'past_due', 'expired', 'cancelled')",
+            name="merchant_subscription_status",
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -61,6 +67,21 @@ class Merchant(TimestampMixin, Base):
     google_place_id: Mapped[str | None] = mapped_column(String(255))
     timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="Asia/Kolkata")
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    trial_ends_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False,
+        default=lambda: utc_now() + timedelta(days=get_settings().billing_trial_days),
+    )
+    subscription_status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="trialing", server_default=text("'trialing'")
+    )
+    razorpay_subscription_id: Mapped[str | None] = mapped_column(String(80), unique=True)
+    current_period_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    cancel_at_period_end: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
+    checkout_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    subscription_authenticated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     services: Mapped[list["Service"]] = relationship(back_populates="merchant")
     staff_members: Mapped[list["StaffMember"]] = relationship(back_populates="merchant")

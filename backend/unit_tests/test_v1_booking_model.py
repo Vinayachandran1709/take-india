@@ -71,7 +71,8 @@ def test_v1_app_exposes_booking_submission_without_razorpay_routes():
     assert default_app is v1_app
     paths = v1_app.openapi()["paths"]
     assert "post" in paths["/api/v1/bookings/initiate"]
-    assert not any("/payment" in path or "razorpay" in path for path in paths)
+    assert not any("/payment" in path for path in paths)
+    assert "post" in paths["/api/v1/webhooks/razorpay"]
     assert "get" in paths["/api/v1/storefront/{slug}"]
 
 
@@ -142,8 +143,12 @@ async def test_v1_http_response_issues_a_hashed_management_token(monkeypatch):
     async def no_notification_details(*args, **kwargs):
         return None
 
+    async def allow_booking(*args, **kwargs):
+        return None
+
     monkeypatch.setattr(confirmed_bookings, "confirm_booking_without_payment", confirm)
     monkeypatch.setattr(confirmed_bookings, "get_notification_details", no_notification_details)
+    monkeypatch.setattr(confirmed_bookings, "require_booking_access", allow_booking)
     v1_app.dependency_overrides[get_db] = override_db
     try:
         async with AsyncClient(
@@ -184,7 +189,7 @@ def test_v1_migration_is_additive_and_reversible_without_database_access():
 
     config = Config()
     config.set_main_option("script_location", str(MIGRATION.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["c6b2e4d9108a"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["b7e3f29c41aa"]
 
     def render(operation):
         output = StringIO()

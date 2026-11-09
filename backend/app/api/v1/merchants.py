@@ -1,18 +1,26 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from app.api.dependencies import CurrentMerchant, DatabaseSession
+from app.api.dependencies import (
+    CurrentClock,
+    CurrentMerchant,
+    DatabaseSession,
+    require_billing_access,
+)
 from app.models import Merchant
 from app.schemas.api import MerchantOut, MerchantUpdate
+from app.services.billing_service import billing_summary
 
 router = APIRouter(prefix="/merchant", tags=["merchant"])
 
 
 @router.get("/me", response_model=MerchantOut)
-async def get_merchant(merchant: CurrentMerchant) -> Merchant:
-    return merchant
+async def get_merchant(merchant: CurrentMerchant, clock: CurrentClock) -> MerchantOut:
+    return MerchantOut.model_validate(merchant).model_copy(
+        update={"billing": billing_summary(merchant, clock())}
+    )
 
 
-@router.patch("/me", response_model=MerchantOut)
+@router.patch("/me", response_model=MerchantOut, dependencies=[Depends(require_billing_access)])
 async def update_merchant(
     payload: MerchantUpdate, merchant: CurrentMerchant, db: DatabaseSession
 ) -> Merchant:

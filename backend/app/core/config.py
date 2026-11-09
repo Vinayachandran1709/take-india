@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     whatsapp_api_version: str = "v26.0"
     resend_api_key: SecretStr | None = None
     email_from: str | None = None
+    razorpay_key_id: str | None = None
+    razorpay_key_secret: SecretStr | None = None
+    razorpay_webhook_secret: SecretStr | None = None
+    razorpay_plan_id: str | None = None
+    billing_trial_days: int = Field(default=30, ge=0, le=3650)
+    billing_plan_amount_paise: int = Field(default=149900, gt=0)
+    billing_total_count: int = Field(default=120, gt=0)
 
     jwt_secret_key: SecretStr | None = None
     jwt_algorithm: str = "HS256"

@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from httpx import ASGITransport, AsyncClient
 
-from app.api.dependencies import get_clock, get_current_merchant
+from app.api.dependencies import get_clock, get_current_merchant, require_billing_access
 from app.core.database import get_db
 from app.models.enums import BookingStatus
 from app.v1_main import app
@@ -49,11 +49,12 @@ async def test_agenda_returns_tenant_scoped_confirmed_bookings():
     app.dependency_overrides[get_current_merchant] = lambda: merchant
     app.dependency_overrides[get_db] = lambda: db
     app.dependency_overrides[get_clock] = lambda: lambda: datetime(2030, 1, 5, 19, 0, tzinfo=UTC)
+    app.dependency_overrides[require_billing_access] = lambda: None
     try:
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/v1/merchants/me/agenda")
     finally:
-        for dependency in (get_current_merchant, get_db, get_clock):
+        for dependency in (get_current_merchant, get_db, get_clock, require_billing_access):
             app.dependency_overrides.pop(dependency, None)
 
     assert response.status_code == 200

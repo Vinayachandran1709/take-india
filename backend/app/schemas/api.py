@@ -15,6 +15,7 @@ from pydantic import (
 
 from app.core.phone import InvalidPhoneNumber, normalize_phone_number
 from app.models.enums import BookingMode, BusinessType, CustomFieldType
+from app.schemas.billing import BillingSummary
 
 
 class ApiModel(BaseModel):
@@ -86,6 +87,7 @@ class MerchantOut(ApiModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    billing: BillingSummary | None = None
 
 
 class AuthResponse(TokenResponse):
@@ -313,6 +315,7 @@ class PublicMerchantOut(ApiModel):
     cover_image_url: str | None
     address: str | None
     timezone: str
+    accepting_bookings: bool = True
 
 
 class PublicStaffOut(ApiModel):
