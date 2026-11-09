@@ -32,7 +32,7 @@ export default async function ServicePage({
               <span className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2"><Clock3 size={17} />{service.duration_minutes ? `${service.duration_minutes} minutes` : service.booking_mode === "CUSTOM_ORDER" ? `${service.prep_lead_time_hours ?? 0}h lead time` : "Fixed schedule"}</span>
             </div>
           </section>
-          <BookingForm slug={slug} service={service} />
+          {storefront.merchant.accepting_bookings ? <BookingForm slug={slug} service={service} /> : <p role="status" className="rounded-3xl border border-[#e6cf9b] bg-[#fff8e9] p-6 font-semibold text-[#614819]">This business is not accepting bookings right now.</p>}
         </div>
       </div>
     </main>

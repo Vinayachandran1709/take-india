@@ -34,6 +34,7 @@ export type Storefront = {
     cover_image_url: string | null;
     address: string | null;
     timezone: string;
+    accepting_bookings: boolean;
   };
   categories: string[];
   services: Service[];

@@ -21,6 +21,7 @@ export default async function MerchantStorefront({ params }: PageProps<"/[slug]"
           <h1 className="mt-3 text-4xl font-bold tracking-[-0.04em] sm:text-5xl">What can we help you with?</h1>
           <p className="mt-4 text-base leading-7 text-[var(--muted)]">Choose a service to see live availability and place a temporary unpaid hold.</p>
         </div>
+        {!storefront.merchant.accepting_bookings && <p role="status" className="mt-8 rounded-2xl border border-[#e6cf9b] bg-[#fff8e9] p-4 font-semibold text-[#614819]">This business is not accepting bookings right now.</p>}
         {storefront.services.length === 0 ? (
           <div className="mt-10 rounded-3xl border border-dashed border-[var(--border)] p-10 text-center text-[var(--muted)]">No services are accepting bookings yet.</div>
         ) : (
