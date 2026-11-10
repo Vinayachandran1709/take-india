@@ -15,15 +15,23 @@ existing name or business type.
 Invalid input returns HTTP 400 with field guidance. A body over 4 KiB returns 413;
 an unavailable database returns 503 with a generic message. The response does not
 echo a phone number or database details. No booking, payment or message is created.
-The route limits each client to 60 requests per 10 minutes in one process. On Render,
-it uses the edge-provided client address; locally it uses the socket address. This
+The route limits each client to 60 requests per 10 minutes in one process. On Railway,
+it uses the edge-provided `X-Real-IP` when that is a valid IP address and otherwise
+falls back to the ASGI client address. Locally it uses the socket address. This
 basic in-memory limit resets on restart and is not shared across instances. Use a
 distributed limit if the service is scaled beyond one instance. CORS alone does not
 prevent abuse.
 
 `app.waitlist_main:app` is the dedicated public entry point. It exposes only
 `/health` and `/api/v1/waitlist`; booking, payment, and merchant routes remain out
-of this waitlist service. The full product entry point remains `app.main:app`.
+of this waitlist service. The V1 product entry point is `app.v1_main:app`;
+`app.phase2_main:app` is the older Phase 2 application.
+
+As of 10 November 2026, the Railway production waitlist service uses the
+isolated Neon `typein-waitlist` branch. The landing and storefront production
+sites were rebuilt with its public API URL and controlled submissions returned
+HTTP 200. The previous Render service is suspended. See
+[the cutover record](../../docs/railway-cutover.md) for validation and rollback.
 
 The new `waitlist_entries` model uses the existing SQLAlchemy base and async
 session. Migration `f93a4c1236de` follows source revision `e82f3b0125cd` and only
@@ -87,7 +95,7 @@ One unrelated existing payment regression requires a Pytest temporary directory
 that is inaccessible in this Windows sandbox, so the runner deselects just that
 case. No real database is reset or contacted.
 
-## Before public collection
+## Deployment requirements and historical launch checklist
 
 1. Review the short WhatsApp contact line and linked privacy page in `landing/`.
 2. Select a backend host and configure private `DATABASE_URL` and, for migrations,

@@ -1,4 +1,15 @@
-# Railway removal status
+# Railway backend history
+
+**Current status (10 November 2026):** The dedicated waitlist API runs on
+Railway production at `https://typein-waitlist-api-production.up.railway.app`.
+The V1 API runs separately on Railway staging at
+`https://typein-v1-api-staging.up.railway.app`. The replaced Render waitlist
+service is suspended. See [the current cutover record](railway-cutover.md)
+for service configuration, validation, rollback, and the remaining production
+V1 blocker. The rest of this document records the earlier Railway removal;
+its statements about current availability are historical.
+
+## Historical removal (13 October 2026)
 
 Railway deployment support has been removed from the repository. On 2026-10-13
 (India time), the backend service and its domain were deleted after preserving
