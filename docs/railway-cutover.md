@@ -40,7 +40,10 @@ The Railway V1 staging service returned HTTP 200 for health and OpenAPI,
 connected to its intended Neon branch at `b7e3f29c41aa`, and returned the
 expected not-found response after a database-backed storefront lookup. A
 synthetic staging merchant signup returned 201; login, account summary,
-billing summary, and public merchant page returned 200. Its CORS preflight
+billing summary, and public merchant page returned 200. A separate synthetic
+staging merchant created a service and hours, retrieved available slots,
+confirmed an appointment, opened its manage link through the staging API,
+rescheduled, and cancelled it. The agenda endpoint also returned 200. Its CORS preflight
 allowed localhost development and rejected `https://typein.co`. No real
 payments, customer messages, or provider-delivered webhooks were exercised.
 Database-free backend unit tests passed (107 tests).
@@ -70,6 +73,11 @@ requires a verified target Neon schema and approved migration plan, production
 credentials, the correct public CORS origins, and a frontend configuration
 that can address booking and waitlist APIs separately. A test Razorpay plan,
 keys, and webhook secret must remain isolated from production billing.
+The current booking confirmation code also generates manage links under
+`https://typein.co/manage/`; a staging booking's link cannot be exercised
+through the production storefront while that storefront points at the
+waitlist-only API. The customer-management smoke check used the staging API
+directly.
 
 The merchant subscription webhook route is `/api/v1/webhooks/razorpay` on
 the V1 API, separate from the older booking-payment webhook. No subscription
