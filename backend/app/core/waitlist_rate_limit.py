@@ -43,6 +43,13 @@ limiter = WaitlistRateLimiter()
 
 
 def client_address(request: Request) -> str:
+    # Railway's public edge supplies X-Real-IP for the remote client.
+    if os.environ.get("RAILWAY_ENVIRONMENT_ID"):
+        forwarded = request.headers.get("x-real-ip", "")
+        try:
+            return str(ipaddress.ip_address(forwarded))
+        except ValueError:
+            pass
     # Render's public edge overwrites this header. Never trust it off Render.
     if os.environ.get("RENDER") == "true":
         forwarded = request.headers.get("cf-connecting-ip", "")

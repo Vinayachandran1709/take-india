@@ -15,11 +15,12 @@ from sqlalchemy import create_engine, func, select
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.api.v1.waitlist import waitlist_database
 from app.core.config import get_settings
 from app.core.exceptions import AppError
-from app.core.waitlist_rate_limit import WaitlistRateLimiter
+from app.core.waitlist_rate_limit import WaitlistRateLimiter, client_address
 from app.models.waitlist import WaitlistEntry
 from app.phase2_main import app
 from app.waitlist_main import app as public_waitlist_app
@@ -300,6 +301,29 @@ async def test_waitlist_rate_limit_is_per_client_and_expires():
     assert error.value.status_code == 429
     await limit.check("client-two", now=1000)
     await limit.check("client-one", now=1601)
+
+
+def test_waitlist_uses_railway_client_ip_only_in_railway(monkeypatch):
+    request = Request({
+        "type": "http",
+        "method": "POST",
+        "path": "/api/v1/waitlist",
+        "headers": [(b"x-real-ip", b"203.0.113.10")],
+        "client": ("10.0.0.1", 12345),
+    })
+    monkeypatch.delenv("RENDER", raising=False)
+    monkeypatch.delenv("RAILWAY_ENVIRONMENT_ID", raising=False)
+    assert client_address(request) == "10.0.0.1"
+    monkeypatch.setenv("RAILWAY_ENVIRONMENT_ID", "test-railway-environment")
+    assert client_address(request) == "203.0.113.10"
+    invalid = Request({
+        "type": "http",
+        "method": "POST",
+        "path": "/api/v1/waitlist",
+        "headers": [(b"x-real-ip", b"not-an-address")],
+        "client": ("10.0.0.1", 12345),
+    })
+    assert client_address(invalid) == "10.0.0.1"
 
 
 def test_new_migration_only_creates_or_removes_waitlist_table():
