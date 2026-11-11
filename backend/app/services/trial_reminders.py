@@ -106,7 +106,7 @@ async def run_trial_reminders(
                 row.last_attempt_at is not None and
                 (
                     require_aware_utc(row.last_attempt_at) > now - RETRY_DELAY
-                    or require_aware_utc(row.last_attempt_at) <= now - timedelta(hours=24)
+                    or require_aware_utc(row.last_attempt_at) <= now - timedelta(hours=2)
                 )
             ):
                 stats["skipped"] += 1
