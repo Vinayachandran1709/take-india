@@ -329,6 +329,7 @@ class Booking(TimestampMixin, Base):
             name="pending_requires_expiry",
         ),
         Index("ix_bookings_merchant_date", "merchant_id", "booking_date"),
+        Index("ix_bookings_merchant_customer_created", "merchant_id", "customer_id", "created_at"),
         Index("ix_bookings_service_date", "service_id", "booking_date"),
         Index("ix_bookings_staff_date", "staff_member_id", "booking_date"),
     )

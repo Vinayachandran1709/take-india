@@ -25,8 +25,12 @@ class Settings(BaseSettings):
     whatsapp_business_account_id: str | None = None
     whatsapp_api_token: SecretStr | None = None
     whatsapp_api_version: str = "v26.0"
+    meta_app_secret: SecretStr | None = None
+    meta_webhook_verify_token: SecretStr | None = None
     resend_api_key: SecretStr | None = None
     email_from: str | None = None
+    trial_reminder_delivery_enabled: bool = False
+    trial_reminder_test_recipient: str | None = None
     razorpay_key_id: str | None = None
     razorpay_key_secret: SecretStr | None = None
     razorpay_webhook_secret: SecretStr | None = None

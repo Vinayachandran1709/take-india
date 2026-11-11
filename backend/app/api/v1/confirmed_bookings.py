@@ -9,7 +9,12 @@ from sqlalchemy import and_, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import CurrentClock, DatabaseSession
+from app.api.dependencies import (
+    CurrentClock,
+    CurrentMerchant,
+    DatabaseSession,
+    require_billing_access,
+)
 from app.core.exceptions import AppError
 from app.core.management_token import new_management_token
 from app.models import Customer, Merchant, Service
@@ -20,6 +25,40 @@ from app.services.whatsapp_service import send_booking_confirmation
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 logger = logging.getLogger(__name__)
+
+
+@router.post(
+    "/manual",
+    response_model=BookingInitiateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_owner_booking(
+    payload: BookingInitiateRequest,
+    merchant: CurrentMerchant,
+    db: DatabaseSession,
+    clock: CurrentClock,
+    response: Response,
+) -> BookingInitiateResponse:
+    """An authenticated owner can override the public per-phone limit."""
+    response.headers["Cache-Control"] = "no-store"
+    await require_billing_access(merchant, clock)
+    service_id = await db.scalar(
+        select(Service.id).where(
+            Service.id == payload.service_id,
+            Service.merchant_id == merchant.id,
+            Service.is_active.is_(True),
+        )
+    )
+    if service_id is None:
+        raise AppError("NOT_FOUND", "Service not found", 404)
+    booking = await confirm_booking_without_payment(
+        db, payload, clock=clock, owner_override=True
+    )
+    token, booking.management_token_hash = new_management_token()
+    await db.commit()
+    return BookingInitiateResponse.model_validate(booking).model_copy(
+        update={"management_token": token}
+    )
 
 
 async def require_booking_access(db: AsyncSession, service_id: UUID, now: datetime) -> None:

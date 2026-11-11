@@ -10,7 +10,23 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const location = useLocation()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [slugStatus, setSlugStatus] = useState('')
   if (isAuthenticated()) return <Navigate to="/dashboard" replace />
+
+  async function checkSlug(value: string) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) || value.length < 2 || value.length > 120) {
+      setSlugStatus('')
+      return
+    }
+    setSlugStatus('Checking availability…')
+    try {
+      const { data } = await api.get<{ available: boolean }>('/auth/slug-available', { params: { slug: value } })
+      const current = document.querySelector<HTMLInputElement>('input[name="slug"]')?.value
+      if (current === value) setSlugStatus(data.available ? 'Slug available' : 'Slug unavailable')
+    } catch {
+      setSlugStatus('Availability check unavailable; submit to try this slug.')
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -49,13 +65,13 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         <h2 className="text-3xl font-bold tracking-[-0.035em]">{mode === 'login' ? 'Welcome back' : 'Create your storefront'}</h2>
         <p className="mt-2 text-sm leading-6 text-[#66736c]">{mode === 'login' ? 'Sign in to manage your bookings.' : 'Start configuring your Phase 1 booking page.'}</p>
         <form onSubmit={submit} className="mt-7 grid gap-4">
-          {mode === 'signup' && <><label>Business name<input required name="business_name" /></label><label>Storefront slug<input required name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="my-business" /></label><div className="grid grid-cols-2 gap-3"><label>Owner name<input required name="owner_name" /></label><label>Phone<input required name="phone_number" placeholder="9876543210" /></label></div><label>Business type<select name="business_type"><option>SALON</option><option>CLINIC</option><option>BAKERY</option><option>FITNESS</option><option>ACADEMY</option></select></label></>}
+          {mode === 'signup' && <><label>Business name<input required name="business_name" /></label><label>Storefront slug<input required name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="my-business" onChange={() => setSlugStatus('')} onBlur={(event) => void checkSlug(event.currentTarget.value)} /></label>{slugStatus && <p role="status" className="text-sm text-[#456254]">{slugStatus}</p>}<div className="grid grid-cols-2 gap-3"><label>Owner name<input required name="owner_name" /></label><label>Phone<input required name="phone_number" placeholder="9876543210" /></label></div><label>Business type<select name="business_type"><option>SALON</option><option>CLINIC</option><option>BAKERY</option><option>FITNESS</option><option>ACADEMY</option></select></label></>}
           <label>Email address<input required name="email" type="email" placeholder="owner@example.com" /></label>
           <label>Password<input required name="password" type="password" minLength={8} /></label>
           {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           <button disabled={submitting} className="mt-2 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#176848] font-semibold text-white disabled:opacity-50">{submitting ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={18} /></button>
         </form>
-        <p className="mt-6 text-center text-sm text-[#66736c]">{mode === 'login' ? 'New to Take-India?' : 'Already registered?'} <Link className="font-semibold text-[#176848]" to={mode === 'login' ? '/signup' : '/login'}>{mode === 'login' ? 'Create an account' : 'Sign in'}</Link></p>
+        <p className="mt-6 text-center text-sm text-[#66736c]">{mode === 'login' ? 'New to Take-India?' : 'Already registered?'} <Link className="font-semibold text-[#176848]" to={mode === 'login' ? '/signup' : '/login'}>{mode === 'login' ? 'Create an account' : 'Sign in'}</Link></p><p className="mt-3 text-center text-sm"><Link className="font-semibold text-[#176848] underline" to="/demo">Explore the public demo</Link></p>
       </div></section>
     </main>
   )

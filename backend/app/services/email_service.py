@@ -18,7 +18,10 @@ def get_last_response_details() -> tuple[int | None, str | None]:
     return _last_response.get()
 
 
-async def send_email(to: str, subject: str, html: str, text: str | None = None) -> bool:
+async def send_email(
+    to: str, subject: str, html: str, text: str | None = None,
+    *, idempotency_key: str | None = None,
+) -> bool:
     """Send one email; never raise an HTTP or transport error to the caller."""
     _last_response.set((None, None))
     settings = get_settings()
@@ -38,9 +41,12 @@ async def send_email(to: str, subject: str, html: str, text: str | None = None) 
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
+            headers = {"Authorization": f"Bearer {api_key}"}
+            if idempotency_key:
+                headers["Idempotency-Key"] = idempotency_key
             response = await client.post(
                 "https://api.resend.com/emails",
-                headers={"Authorization": f"Bearer {api_key}"},
+                headers=headers,
                 json=payload,
             )
     except httpx.RequestError as exc:

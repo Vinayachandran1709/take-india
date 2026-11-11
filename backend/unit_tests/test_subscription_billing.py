@@ -433,7 +433,7 @@ def test_billing_migration_is_additive_and_reversible_offline(monkeypatch):
     assert migration.down_revision == "c6b2e4d9108a"
     config = Config()
     config.set_main_option("script_location", str(path.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["d4c2e6a91b70"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["a81d7e4c902b"]
     monkeypatch.setenv("BILLING_TRIAL_DAYS", "30")
 
     def render(operation):

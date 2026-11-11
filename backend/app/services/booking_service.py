@@ -31,6 +31,13 @@ from app.services.custom_fields import validate_custom_field_responses
 
 CROCKFORD_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 ReferenceFactory = Callable[[date], str]
+PUBLIC_BOOKINGS_PER_PHONE_24H = 3
+_COUNTED_BOOKING_STATUSES = (
+    BookingStatus.CONFIRMED,
+    BookingStatus.CANCELLED,
+    BookingStatus.COMPLETED,
+    BookingStatus.NO_SHOW,
+)
 
 
 def generate_booking_reference(booking_date: date) -> str:
@@ -465,11 +472,31 @@ async def confirm_booking_without_payment(
     *,
     clock: Clock = utc_now,
     reference_factory: ReferenceFactory = generate_booking_reference,
+    owner_override: bool = False,
 ) -> Booking:
     """Reserve and confirm in one transaction; the caller commits both together."""
     booking = await initiate_booking(
         db, payload, clock=clock, reference_factory=reference_factory
     )
+    if not owner_override:
+        # initiate_booking upserts the merchant/phone customer first. Its
+        # conflict update holds that row lock until commit, serializing
+        # concurrent public submissions from the same number.
+        now_utc = require_aware_utc(clock())
+        recent = await db.scalar(
+            select(func.count(Booking.id)).where(
+                Booking.merchant_id == booking.merchant_id,
+                Booking.customer_id == booking.customer_id,
+                Booking.created_at > now_utc - timedelta(hours=24),
+                Booking.booking_status.in_(_COUNTED_BOOKING_STATUSES),
+            )
+        )
+        if int(recent or 0) >= PUBLIC_BOOKINGS_PER_PHONE_24H:
+            raise AppError(
+                "BOOKING_PHONE_LIMIT",
+                "This number has reached the booking limit for this business. Contact the owner.",
+                429,
+            )
     booking.booking_status = BookingStatus.CONFIRMED
     booking.hold_expires_at = None
     booking.amount_to_pay = Decimal("0.00")

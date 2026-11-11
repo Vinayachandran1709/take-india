@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { Shell } from './components/Shell'
 import { AuthPage } from './pages/AuthPage'
 import { BillingPage } from './pages/BillingPage'
+import { DemoPage } from './pages/DemoPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { SchedulesPage } from './pages/SchedulesPage'
 import { ServicesPage } from './pages/ServicesPage'
@@ -14,5 +15,5 @@ function DashboardLayout() {
 }
 
 export default function App() {
-  return <Routes><Route path="/login" element={<AuthPage mode="login" />} /><Route path="/signup" element={<AuthPage mode="signup" />} /><Route path="/dashboard" element={<DashboardLayout />}><Route index element={<OverviewPage />} /><Route path="services" element={<ServicesPage />} /><Route path="settings" element={<SettingsPage />} /><Route path="schedules" element={<SchedulesPage />} /><Route path="billing" element={<BillingPage />} /></Route><Route path="*" element={<Navigate to="/dashboard" replace />} /></Routes>
+  return <Routes><Route path="/login" element={<AuthPage mode="login" />} /><Route path="/signup" element={<AuthPage mode="signup" />} /><Route path="/demo" element={<DemoPage />} /><Route path="/dashboard" element={<DashboardLayout />}><Route index element={<OverviewPage />} /><Route path="services" element={<ServicesPage />} /><Route path="settings" element={<SettingsPage />} /><Route path="schedules" element={<SchedulesPage />} /><Route path="billing" element={<BillingPage />} /></Route><Route path="*" element={<Navigate to="/dashboard" replace />} /></Routes>
 }

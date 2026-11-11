@@ -19,6 +19,7 @@ from pydantic import ValidationError
 
 from app.api.v1 import confirmed_bookings
 from app.core.database import get_db
+from app.core.exceptions import AppError
 from app.main import app as default_app
 from app.models import Booking, Service
 from app.models.enums import BookingStatus, PaymentStatus
@@ -81,6 +82,7 @@ async def test_v1_booking_confirms_atomically_without_recording_payment(monkeypa
 
     customer = SimpleNamespace(total_bookings_count=0)
     booking = SimpleNamespace(
+        merchant_id=uuid4(),
         customer_id=uuid4(),
         booking_status=BookingStatus.PENDING_PAYMENT,
         payment_status=PaymentStatus.PENDING,
@@ -92,6 +94,12 @@ async def test_v1_booking_confirms_atomically_without_recording_payment(monkeypa
         return booking
 
     class Database:
+        async def scalar(self, statement):
+            query = str(statement)
+            assert "bookings.customer_id" in query
+            assert "bookings.created_at" in query
+            return 2
+
         async def get(self, model, key):
             assert model is not None and key == booking.customer_id
             return customer
@@ -104,6 +112,109 @@ async def test_v1_booking_confirms_atomically_without_recording_payment(monkeypa
     assert booking.hold_expires_at is None
     assert booking.amount_to_pay == Decimal("0.00")
     assert customer.total_bookings_count == 1
+
+
+async def test_public_booking_cap_counts_previous_successes(monkeypatch):
+    from app.services import booking_service
+
+    booking = SimpleNamespace(
+        merchant_id=uuid4(), customer_id=uuid4(), booking_status=BookingStatus.PENDING_PAYMENT
+    )
+
+    async def hold(*args, **kwargs):
+        return booking
+
+    class Database:
+        async def scalar(self, _statement):
+            return 3
+
+    monkeypatch.setattr(booking_service, "initiate_booking", hold)
+    with pytest.raises(AppError) as raised:
+        await booking_service.confirm_booking_without_payment(Database(), object())
+    assert raised.value.code == "BOOKING_PHONE_LIMIT"
+    assert raised.value.status_code == 429
+    assert booking.booking_status is BookingStatus.PENDING_PAYMENT
+
+
+async def test_public_cap_counts_cancelled_bookings_and_owner_can_override(monkeypatch):
+    from app.services import booking_service
+
+    booking = SimpleNamespace(
+        merchant_id=uuid4(), customer_id=uuid4(), booking_status=BookingStatus.PENDING_PAYMENT,
+        hold_expires_at=datetime.now(UTC), amount_to_pay=Decimal("1.00"),
+    )
+    customer = SimpleNamespace(total_bookings_count=0)
+    seen = []
+
+    async def hold(*args, **kwargs):
+        return booking
+
+    class Database:
+        async def scalar(self, statement):
+            seen.append(statement)
+            return 3
+
+        async def get(self, model, key):
+            assert key == booking.customer_id
+            return customer
+
+    monkeypatch.setattr(booking_service, "initiate_booking", hold)
+    with pytest.raises(AppError):
+        await booking_service.confirm_booking_without_payment(Database(), object())
+    query = str(seen[0].compile(compile_kwargs={"literal_binds": True}))
+    assert "CANCELLED" in query
+    assert "PENDING_PAYMENT" not in query
+    assert "bookings.created_at >" in query
+
+    assert await booking_service.confirm_booking_without_payment(
+        Database(), object(), owner_override=True
+    ) is booking
+    assert len(seen) == 1
+    assert customer.total_bookings_count == 1
+
+
+async def test_owner_booking_checks_tenant_and_uses_override(monkeypatch):
+    from fastapi import Response
+
+    merchant = SimpleNamespace(id=uuid4())
+    service_id = uuid4()
+    booking = SimpleNamespace(
+        booking_reference="TI-20300107-OWNERTEST1",
+        booking_status=BookingStatus.CONFIRMED,
+        payment_status=PaymentStatus.PENDING,
+        booking_date=date(2030, 1, 7),
+        start_time=time(10), end_time=time(11),
+        staff_member_id=None, batch_schedule_id=None,
+        amount_to_pay=Decimal("0.00"), hold_expires_at=None,
+        management_token_hash=None,
+    )
+    seen = []
+
+    class Database:
+        async def scalar(self, statement):
+            seen.append(str(statement.compile(compile_kwargs={"literal_binds": True})))
+            return service_id
+
+        async def commit(self):
+            seen.append("commit")
+
+    async def allow_access(*args):
+        pass
+
+    async def confirm(*args, **kwargs):
+        assert kwargs["owner_override"] is True
+        return booking
+
+    monkeypatch.setattr(confirmed_bookings, "require_billing_access", allow_access)
+    monkeypatch.setattr(confirmed_bookings, "confirm_booking_without_payment", confirm)
+    payload = SimpleNamespace(service_id=service_id)
+    result = await confirmed_bookings.create_owner_booking(
+        payload, merchant, Database(), lambda: datetime.now(UTC), Response()
+    )
+    assert result.management_token is not None
+    assert "services.merchant_id" in seen[0]
+    assert merchant.id.hex in seen[0]
+    assert seen[-1] == "commit"
 
 
 async def test_v1_http_response_issues_a_hashed_management_token(monkeypatch):
@@ -189,7 +300,7 @@ def test_v1_migration_is_additive_and_reversible_without_database_access():
 
     config = Config()
     config.set_main_option("script_location", str(MIGRATION.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["d4c2e6a91b70"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["a81d7e4c902b"]
 
     def render(operation):
         output = StringIO()

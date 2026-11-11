@@ -1,13 +1,15 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, Request, status
 from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.dependencies import CurrentClock, CurrentMerchant, DatabaseSession
+from app.core.auth_limits import limit_auth_request
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.security import create_access_token, hash_password, verify_password
+from app.core.slugs import is_reserved_slug
 from app.models import Merchant
 from app.schemas.api import AuthResponse, LoginRequest, MerchantOut, SignupRequest
 from app.schemas.billing import BillingSummary
@@ -16,8 +18,26 @@ from app.services.billing_service import billing_summary
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
+@router.get("/slug-available")
+async def slug_available(
+    request: Request,
+    db: DatabaseSession,
+    slug: str = Query(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", min_length=2, max_length=120),
+) -> dict[str, bool]:
+    await limit_auth_request(request, "slug")
+    if is_reserved_slug(slug):
+        return {"available": False}
+    existing = await db.scalar(select(Merchant.id).where(Merchant.slug == slug))
+    return {"available": existing is None}
+
+
 @router.post("/signup", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
-async def signup(payload: SignupRequest, db: DatabaseSession, clock: CurrentClock) -> AuthResponse:
+async def signup(
+    payload: SignupRequest, request: Request, db: DatabaseSession, clock: CurrentClock
+) -> AuthResponse:
+    await limit_auth_request(request, "signup")
+    if is_reserved_slug(payload.slug):
+        raise AppError("RESOURCE_CONFLICT", "Storefront slug is unavailable", 409)
     existing = await db.scalar(
         select(Merchant.id).where(
             or_(Merchant.email == str(payload.email), Merchant.slug == payload.slug)
@@ -56,7 +76,8 @@ async def signup(payload: SignupRequest, db: DatabaseSession, clock: CurrentCloc
 
 
 @router.post("/login", response_model=AuthResponse)
-async def login(payload: LoginRequest, db: DatabaseSession) -> AuthResponse:
+async def login(payload: LoginRequest, request: Request, db: DatabaseSession) -> AuthResponse:
+    await limit_auth_request(request, "login")
     merchant = await db.scalar(select(Merchant).where(Merchant.email == str(payload.email)))
     if merchant is None or not verify_password(payload.password, merchant.password_hash):
         raise AppError("AUTHENTICATION_REQUIRED", "Email or password is incorrect", 401)

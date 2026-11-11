@@ -337,7 +337,7 @@ def test_new_migration_only_creates_or_removes_waitlist_table():
     assert migration.down_revision == "e82f3b0125cd"
     config = Config()
     config.set_main_option("script_location", str(path.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["d4c2e6a91b70"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["a81d7e4c902b"]
     actions = [(migration.upgrade, "CREATE TABLE"), (migration.downgrade, "DROP TABLE")]
     for method, keyword in actions:
         output = StringIO()
