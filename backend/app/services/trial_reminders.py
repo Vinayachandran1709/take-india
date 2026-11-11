@@ -2,6 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta
+from html import escape
 
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -116,7 +117,7 @@ async def run_trial_reminders(
             environment_key = "live" if production else "test"
             key = f"typein-trial-{environment_key}-{merchant_id}-{kind}"
             success = await send(
-                recipient, subject, f"<p>{body}</p>", body, idempotency_key=key
+                recipient, subject, f"<p>{escape(body)}</p>", body, idempotency_key=key
             )
             _, provider_id = get_last_response_details() if send is send_email else (None, None)
             await db.execute(text("""
