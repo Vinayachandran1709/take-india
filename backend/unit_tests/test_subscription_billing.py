@@ -42,6 +42,7 @@ def merchant(**changes):
         "subscription_status": "trialing", "current_period_end": None,
         "cancel_at_period_end": False, "checkout_confirmed_at": None,
         "subscription_authenticated_at": None, "razorpay_subscription_id": None,
+        "billing_delinquent_at": None,
     }
     values.update(changes)
     return SimpleNamespace(**values)
@@ -53,7 +54,11 @@ def test_trial_expiry_and_lock_rules():
     assert billing_summary(merchant(), NOW + timedelta(days=10))["locked"]
     active = merchant(subscription_status="active", current_period_end=NOW + timedelta(days=30))
     assert not billing_summary(active, NOW)["locked"]
-    assert billing_summary(active, NOW + timedelta(days=30))["locked"]
+    assert not billing_summary(active, NOW + timedelta(days=30))["locked"]
+    assert billing_summary(active, NOW + timedelta(days=33))["locked"]
+    overdue = merchant(subscription_status="past_due", billing_delinquent_at=NOW)
+    assert not billing_summary(overdue, NOW + timedelta(days=2))["locked"]
+    assert billing_summary(overdue, NOW + timedelta(days=3))["locked"]
     assert billing_summary(merchant(subscription_status="past_due"), NOW)["locked"]
     cancelled = merchant(
         subscription_status="cancelled", current_period_end=NOW + timedelta(days=1)
@@ -235,6 +240,63 @@ async def test_late_webhook_cannot_undo_newer_state(monkeypatch):
     assert owner.subscription_status == "active"
 
 
+async def test_failure_grace_does_not_restart_and_recovery_clears_it(monkeypatch):
+    owner = merchant(razorpay_subscription_id="sub_example")
+    db = WebhookDatabase(owner)
+    monkeypatch.setattr(billing_webhooks, "get_settings", lambda: SimpleNamespace(
+        razorpay_plan_id="plan_example", billing_plan_amount_paise=149900,
+    ))
+    for event in ("subscription.pending", "subscription.halted"):
+        data = webhook_data(event)
+        assert await billing_webhooks.process_verified_event(
+            db, f"evt_{event}", json.dumps(data).encode(), data
+        ) == "applied"
+        assert owner.billing_delinquent_at == NOW
+    assert not billing_summary(owner, NOW + timedelta(days=2))["locked"]
+    assert billing_summary(owner, NOW + timedelta(days=3))["locked"]
+    data = webhook_data("subscription.charged")
+    assert await billing_webhooks.process_verified_event(
+        db, "evt_recovered", json.dumps(data).encode(), data
+    ) == "applied"
+    assert owner.billing_delinquent_at is None
+    assert not billing_summary(owner, NOW + timedelta(days=3))["locked"]
+
+
+async def test_cancel_before_first_charge_preserves_trial(monkeypatch):
+    owner = merchant(razorpay_subscription_id="sub_example", subscription_authenticated_at=NOW)
+    requests = []
+
+    class Database:
+        async def scalar(self, _statement):
+            return owner
+
+        async def commit(self):
+            pass
+
+    async def provider(_settings, method, path, payload=None):
+        requests.append((method, path, payload))
+        if method == "GET":
+            return {"id": "sub_example", "plan_id": "plan_example",
+                    "status": "authenticated", "paid_count": 0}
+        return {"id": "sub_example", "status": "cancelled"}
+
+    monkeypatch.setattr(billing, "get_settings", lambda: SimpleNamespace(
+        razorpay_plan_id="plan_example"
+    ))
+    monkeypatch.setattr(billing, "require_billing_config", lambda _settings: None)
+    monkeypatch.setattr(billing, "razorpay_request", provider)
+    response = await billing.cancel(owner, Database(), lambda: NOW, Response())
+    assert response.status == "cancelled"
+    assert requests[-1] == ("POST", "/subscriptions/sub_example/cancel",
+                            {"cancel_at_cycle_end": False})
+    assert owner.subscription_status == "cancelled"
+    assert not billing_summary(owner, NOW)["locked"]
+    assert billing_summary(owner, owner.trial_ends_at)["locked"]
+    repeated = await billing.cancel(owner, Database(), lambda: NOW, Response())
+    assert repeated.status == "cancelled"
+    assert len(requests) == 2
+
+
 async def test_subscribe_reuses_existing_subscription_without_network(monkeypatch):
     owner = merchant(razorpay_subscription_id="sub_existing")
     settings = SimpleNamespace(razorpay_key_id="public", razorpay_plan_id="plan_example")
@@ -371,7 +433,7 @@ def test_billing_migration_is_additive_and_reversible_offline(monkeypatch):
     assert migration.down_revision == "c6b2e4d9108a"
     config = Config()
     config.set_main_option("script_location", str(path.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["b7e3f29c41aa"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["d4c2e6a91b70"]
     monkeypatch.setenv("BILLING_TRIAL_DAYS", "30")
 
     def render(operation):

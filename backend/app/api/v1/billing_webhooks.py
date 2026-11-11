@@ -181,6 +181,13 @@ async def process_verified_event(db: DatabaseSession, event_id: str, body: bytes
         if event_type in ("subscription.activated", "subscription.charged", "subscription.resumed"):
             merchant.subscription_authenticated_at = event_time
             merchant.checkout_confirmed_at = None
+            merchant.billing_delinquent_at = None
+        elif event_type in ("subscription.pending", "subscription.halted"):
+            # A retry or later halt must not restart the first failure's grace.
+            merchant.billing_delinquent_at = merchant.billing_delinquent_at or event_time
+        else:
+            # Pause is an intentional provider state, not a failed-payment grace.
+            merchant.billing_delinquent_at = None
     if period_end is not None:
         merchant.current_period_end = period_end
     if event_type in ("subscription.cancelled", "subscription.completed"):

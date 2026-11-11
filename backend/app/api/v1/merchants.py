@@ -8,6 +8,7 @@ from app.api.dependencies import (
 )
 from app.models import Merchant
 from app.schemas.api import MerchantOut, MerchantUpdate
+from app.schemas.billing import BillingSummary
 from app.services.billing_service import billing_summary
 
 router = APIRouter(prefix="/merchant", tags=["merchant"])
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/merchant", tags=["merchant"])
 @router.get("/me", response_model=MerchantOut)
 async def get_merchant(merchant: CurrentMerchant, clock: CurrentClock) -> MerchantOut:
     return MerchantOut.model_validate(merchant).model_copy(
-        update={"billing": billing_summary(merchant, clock())}
+        update={"billing": BillingSummary.model_validate(billing_summary(merchant, clock()))}
     )
 
 

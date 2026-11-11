@@ -10,7 +10,9 @@ class BillingSummary(BaseModel):
     trial_ends_at: datetime
     days_left: int
     current_period_end: datetime | None
+    grace_ends_at: datetime | None
     cancel_at_period_end: bool
+    has_subscription: bool
     locked: bool
     authorization_confirmed: bool
     processing: bool

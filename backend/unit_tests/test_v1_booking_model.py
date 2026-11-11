@@ -189,7 +189,7 @@ def test_v1_migration_is_additive_and_reversible_without_database_access():
 
     config = Config()
     config.set_main_option("script_location", str(MIGRATION.parents[1]))
-    assert ScriptDirectory.from_config(config).get_heads() == ["b7e3f29c41aa"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["d4c2e6a91b70"]
 
     def render(operation):
         output = StringIO()

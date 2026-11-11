@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     billing_trial_days: int = Field(default=30, ge=0, le=3650)
     billing_plan_amount_paise: int = Field(default=149900, gt=0)
     billing_total_count: int = Field(default=120, gt=0)
+    billing_grace_days: int = Field(default=3, ge=0, le=30)
 
     jwt_secret_key: SecretStr | None = None
     jwt_algorithm: str = "HS256"

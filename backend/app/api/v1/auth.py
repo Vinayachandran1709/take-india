@@ -10,6 +10,7 @@ from app.core.exceptions import AppError
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models import Merchant
 from app.schemas.api import AuthResponse, LoginRequest, MerchantOut, SignupRequest
+from app.schemas.billing import BillingSummary
 from app.services.billing_service import billing_summary
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -49,7 +50,7 @@ async def signup(payload: SignupRequest, db: DatabaseSession, clock: CurrentCloc
     return AuthResponse(
         access_token=create_access_token(merchant.id),
         merchant=MerchantOut.model_validate(merchant).model_copy(
-            update={"billing": billing_summary(merchant, clock())}
+            update={"billing": BillingSummary.model_validate(billing_summary(merchant, clock()))}
         ),
     )
 
@@ -70,5 +71,5 @@ async def login(payload: LoginRequest, db: DatabaseSession) -> AuthResponse:
 @router.get("/me", response_model=MerchantOut)
 async def auth_me(merchant: CurrentMerchant, clock: CurrentClock) -> MerchantOut:
     return MerchantOut.model_validate(merchant).model_copy(
-        update={"billing": billing_summary(merchant, clock())}
+        update={"billing": BillingSummary.model_validate(billing_summary(merchant, clock()))}
     )

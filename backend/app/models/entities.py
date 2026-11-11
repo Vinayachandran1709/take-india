@@ -82,6 +82,7 @@ class Merchant(TimestampMixin, Base):
     )
     checkout_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     subscription_authenticated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    billing_delinquent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     services: Mapped[list["Service"]] = relationship(back_populates="merchant")
     staff_members: Mapped[list["StaffMember"]] = relationship(back_populates="merchant")

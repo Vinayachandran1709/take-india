@@ -71,7 +71,10 @@ export function BillingPage() {
     }
   }, [])
 
-  useEffect(() => { void refresh() }, [refresh])
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void refresh() }, 0)
+    return () => window.clearTimeout(timer)
+  }, [refresh])
   useEffect(() => {
     if (!billing?.summary.processing) return
     const timer = window.setInterval(() => { void refresh() }, 5000)
@@ -148,14 +151,17 @@ export function BillingPage() {
           {summary.effective_status === 'trialing' && <div><dt className="text-[#456254]">Trial remaining</dt><dd className="mt-1 font-semibold">{summary.days_left} {summary.days_left === 1 ? 'day' : 'days'}</dd></div>}
           <div><dt className="text-[#456254]">Trial ends</dt><dd className="mt-1 font-semibold">{displayDate(summary.trial_ends_at)}</dd></div>
           {summary.current_period_end && <div><dt className="text-[#456254]">Current period ends</dt><dd className="mt-1 font-semibold">{displayDate(summary.current_period_end)}</dd></div>}
+          {summary.grace_ends_at && <div><dt className="text-[#456254]">Payment grace ends</dt><dd className="mt-1 font-semibold">{displayDate(summary.grace_ends_at)}</dd></div>}
         </dl>
         {summary.processing && <p role="status" className="mt-5 rounded-xl bg-[#fff8e9] p-4 text-sm text-[#614819]"><LoaderCircle className="mr-2 inline animate-spin" size={16} />Payment authorization is processing. Access updates after Razorpay confirms it.</p>}
         {summary.authorization_confirmed && summary.effective_status === 'trialing' && <p role="status" className="mt-5 rounded-xl bg-[#eaf5ee] p-4 text-sm text-[#166b4a]">Subscription authorization received. Your free trial continues; paid access begins when Razorpay starts the billing cycle.</p>}
         {summary.cancel_at_period_end && <p role="status" className="mt-5 rounded-xl bg-[#fff8e9] p-4 text-sm text-[#614819]">Cancellation is scheduled for the end of your current billing cycle.</p>}
+        {summary.effective_status === 'past_due' && <p role="status" className="mt-5 rounded-xl bg-[#fff8e9] p-4 text-sm text-[#614819]">{summary.grace_ends_at && !summary.locked ? `Your payment needs attention. You can keep using typein until ${displayDate(summary.grace_ends_at)}.` : 'Your account is locked until billing is resolved. Your billing page remains available.'}</p>}
+        {summary.effective_status === 'cancelled' && !summary.locked && <p role="status" className="mt-5 rounded-xl bg-[#eaf5ee] p-4 text-sm text-[#166b4a]">Your subscription is cancelled. Your existing trial or paid access continues until its scheduled end.</p>}
         <div className="mt-6 flex flex-wrap gap-3">
           {!summary.cancel_at_period_end && !summary.processing && ((!summary.authorization_confirmed && summary.effective_status === 'trialing') || summary.locked) && <button type="button" onClick={() => void subscribe()} disabled={busy || !merchant} className="rounded-xl bg-[#166b4a] px-5 py-3 font-bold text-white disabled:opacity-50">{busy ? 'Please wait…' : 'Subscribe'}</button>}
-          {summary.effective_status === 'active' && !summary.cancel_at_period_end && !confirmCancel && <button type="button" onClick={() => setConfirmCancel(true)} className="rounded-xl border border-[#c7d5cd] px-5 py-3 font-semibold text-[#123c2d]">Cancel subscription</button>}
-          {confirmCancel && <div className="w-full rounded-xl border border-[#e6cf9b] bg-[#fff8e9] p-4"><p className="text-sm text-[#614819]">Cancel at the end of this billing cycle? You can keep using typein until then.</p><div className="mt-3 flex gap-3"><button type="button" onClick={() => void cancel()} disabled={busy} className="rounded-lg bg-[#123c2d] px-4 py-2 font-semibold text-white disabled:opacity-50">Confirm cancellation</button><button type="button" onClick={() => setConfirmCancel(false)} className="rounded-lg px-4 py-2 font-semibold text-[#123c2d]">Keep subscription</button></div></div>}
+          {summary.has_subscription && (summary.effective_status === 'trialing' || summary.effective_status === 'active') && !summary.cancel_at_period_end && !confirmCancel && <button type="button" onClick={() => setConfirmCancel(true)} className="rounded-xl border border-[#c7d5cd] px-5 py-3 font-semibold text-[#123c2d]">Cancel subscription</button>}
+          {confirmCancel && <div className="w-full rounded-xl border border-[#e6cf9b] bg-[#fff8e9] p-4"><p className="text-sm text-[#614819]">{summary.effective_status === 'trialing' ? 'Cancel now? Your free trial will continue until its original end date.' : 'Cancel at the end of this billing cycle? You can keep using typein until then.'}</p><div className="mt-3 flex gap-3"><button type="button" onClick={() => void cancel()} disabled={busy} className="rounded-lg bg-[#123c2d] px-4 py-2 font-semibold text-white disabled:opacity-50">Confirm cancellation</button><button type="button" onClick={() => setConfirmCancel(false)} className="rounded-lg px-4 py-2 font-semibold text-[#123c2d]">Keep subscription</button></div></div>}
         </div>
       </section>}
       {billing && <section className="rounded-3xl border border-[#dce4df] bg-white p-6 shadow-sm sm:p-8"><h2 className="text-xl font-bold text-[#123c2d]">Payment history</h2>{billing.payments.length === 0 ? <p className="mt-4 text-[#456254]">No subscription payments recorded yet.</p> : <ul className="mt-4 divide-y divide-[#dce4df]">{billing.payments.map((payment) => <li key={payment.razorpay_payment_id} className="flex flex-wrap items-center justify-between gap-2 py-4 text-sm"><span><span className="block font-semibold">Rs {(payment.amount_paise / 100).toLocaleString('en-IN')}</span><span className="text-[#456254]">{displayDate(payment.paid_at)}</span></span><span className="capitalize text-[#456254]">{payment.status}</span></li>)}</ul>}</section>}

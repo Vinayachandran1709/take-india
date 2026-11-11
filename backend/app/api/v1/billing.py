@@ -156,25 +156,52 @@ async def cancel(
     )
     if locked_merchant is None or not locked_merchant.razorpay_subscription_id:
         raise AppError("BILLING_NOT_FOUND", "There is no subscription to cancel", 404)
+    if locked_merchant.subscription_status == "cancelled":
+        return BillingActionResponse(status="cancelled")
     if locked_merchant.cancel_at_period_end:
         return BillingActionResponse(status="cancel_scheduled")
-    if (
-        locked_merchant.subscription_status != "active"
+    subscription_id = locked_merchant.razorpay_subscription_id
+    current = await razorpay_request(settings, "GET", f"/subscriptions/{subscription_id}")
+    if current.get("id") != subscription_id or current.get("plan_id") != settings.razorpay_plan_id:
+        raise AppError("BILLING_UNAVAILABLE", "Subscription status could not be verified", 503)
+    provider_status = current.get("status")
+    paid_count = current.get("paid_count")
+    if not isinstance(paid_count, int) or isinstance(paid_count, bool) or paid_count < 0:
+        raise AppError("BILLING_UNAVAILABLE", "Subscription status could not be verified", 503)
+    if provider_status == "cancelled":
+        locked_merchant.subscription_status = "cancelled"
+        locked_merchant.cancel_at_period_end = False
+        await db.commit()
+        return BillingActionResponse(status="cancelled")
+    before_first_cycle = paid_count == 0 and provider_status in ("created", "authenticated")
+    if not before_first_cycle and (
+        provider_status not in ("active", "resumed")
         or locked_merchant.current_period_end is None
         or locked_merchant.current_period_end <= clock()
     ):
         raise AppError(
             "BILLING_CYCLE_NOT_STARTED",
-            "Cycle-end cancellation is available after the first billing cycle starts",
+            "Cancellation is unavailable in the current subscription state",
             409,
         )
     result = await razorpay_request(
         settings, "POST",
-        f"/subscriptions/{locked_merchant.razorpay_subscription_id}/cancel",
-        {"cancel_at_cycle_end": True},
+        f"/subscriptions/{subscription_id}/cancel",
+        {"cancel_at_cycle_end": not before_first_cycle},
     )
-    if result.get("id") != locked_merchant.razorpay_subscription_id:
+    if result.get("id") != subscription_id:
         raise AppError("BILLING_UNAVAILABLE", "Billing provider returned an invalid response", 503)
-    locked_merchant.cancel_at_period_end = True
+    if before_first_cycle:
+        if result.get("status") != "cancelled":
+            raise AppError("BILLING_UNAVAILABLE", "Cancellation was not confirmed", 503)
+        locked_merchant.subscription_status = "cancelled"
+        locked_merchant.current_period_end = None
+        locked_merchant.cancel_at_period_end = False
+        locked_merchant.checkout_confirmed_at = None
+        locked_merchant.subscription_authenticated_at = None
+        status = "cancelled"
+    else:
+        locked_merchant.cancel_at_period_end = True
+        status = "cancel_scheduled"
     await db.commit()
-    return BillingActionResponse(status="cancel_scheduled")
+    return BillingActionResponse(status=status)

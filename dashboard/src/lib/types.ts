@@ -17,7 +17,9 @@ export type BillingSummary = {
   trial_ends_at: string
   days_left: number
   current_period_end: string | null
+  grace_ends_at: string | null
   cancel_at_period_end: boolean
+  has_subscription: boolean
   locked: boolean
   authorization_confirmed: boolean
   processing: boolean

@@ -12,7 +12,7 @@ from typing import Any
 import httpx
 
 from app.core.clock import require_aware_utc
-from app.core.config import Settings
+from app.core.config import Settings, get_settings
 from app.core.exceptions import AppError
 from app.models import Merchant
 
@@ -26,16 +26,27 @@ def billing_summary(merchant: Merchant, now: datetime) -> dict[str, Any]:
         require_aware_utc(merchant.current_period_end) if merchant.current_period_end else None
     )
     status = merchant.subscription_status
+    delinquent_at = (
+        require_aware_utc(merchant.billing_delinquent_at)
+        if merchant.billing_delinquent_at else None
+    )
     if status == "trialing" and now >= trial_end:
         status = "expired"
     elif status == "active" and (period_end is None or now >= period_end):
         status = "past_due"
+        delinquent_at = delinquent_at or period_end
+    grace_end = (
+        delinquent_at + timedelta(days=get_settings().billing_grace_days)
+        if status == "past_due" and delinquent_at else None
+    )
     if status == "trialing":
         locked = False
     elif status == "active":
         locked = False
     elif status == "cancelled":
         locked = now >= (period_end or trial_end)
+    elif status == "past_due":
+        locked = grace_end is None or now >= grace_end
     else:
         locked = True
     return {
@@ -44,7 +55,9 @@ def billing_summary(merchant: Merchant, now: datetime) -> dict[str, Any]:
         "days_left": max(0, math.ceil((trial_end - now).total_seconds() / 86400))
         if status == "trialing" else 0,
         "current_period_end": period_end,
+        "grace_ends_at": grace_end,
         "cancel_at_period_end": merchant.cancel_at_period_end,
+        "has_subscription": merchant.razorpay_subscription_id is not None,
         "locked": locked,
         "authorization_confirmed": merchant.checkout_confirmed_at is not None
         or merchant.subscription_authenticated_at is not None,
