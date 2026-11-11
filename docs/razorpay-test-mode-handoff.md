@@ -36,16 +36,15 @@ the deployed service reads its own Railway variables, not a local `.env`.
 
 ## Razorpay dashboard check
 
-In **Test Mode** open Account & Settings → Webhooks. Create or edit the
-**merchant subscription** webhook with URL
+In **Test Mode**, Account & Settings → Webhooks, the existing merchant
+subscription webhook was updated on 11 November to
 `https://typein-v1-api-staging.up.railway.app/api/v1/webhooks/razorpay`.
-Select `subscription.authenticated`, `subscription.activated`,
+It is enabled and selects `subscription.authenticated`, `subscription.activated`,
 `subscription.charged`, `subscription.pending`, `subscription.halted`,
 `subscription.paused`, `subscription.resumed`, `subscription.cancelled`, and
-`subscription.completed`. Keep the older booking-payment webhook separate.
-Check the delivery history for an HTTP 2xx response and the matching event
-and subscription in the staging database. Merely saving the webhook does not
-prove delivery.
+`subscription.completed`. The other Razorpay webhooks were left unchanged.
+The existing secret is hidden in Razorpay; its match with Railway was verified
+by a provider-delivered, signed cancellation event accepted by the V1 API.
 
 The current key was confirmed to be a Test Mode key, and the provider API
 confirmed the configured plan is INR 1,499 monthly with interval 1. A new
@@ -53,8 +52,29 @@ staging merchant completed signup, created a real Test Mode subscription,
 and cancelled it before any charge. The API reported `cancelled`, retained
 trial access, and showed zero payments. This confirms that Razorpay accepted
 the current `total_count=120` on subscription creation; it is a cycle count,
-not an accepted business account cap. No test card or UPI Checkout payment
-and no provider-delivered webhook were observed in this check.
+not an accepted business account cap. After updating the webhook URL, a second
+controlled Test Mode subscription was created and cancelled. Railway logged
+`POST /api/v1/webhooks/razorpay` with HTTP 200, and the V1 staging Neon branch
+recorded `subscription.cancelled` with `processing_status=applied` and no
+error code.
+
+On 11 November, a separate staging merchant completed the browser Checkout
+with an official Razorpay dummy Visa card. The user performed the final
+simulated bank step. Checkout returned to Billing with authorization received,
+and the Neon branch recorded provider-delivered `subscription.authenticated`
+with `processing_status=applied` and no error. The merchant remained `trialing`
+through 11 December, with zero monthly subscription payments; Razorpay has not
+started the paid cycle. Precharge cancellation via the dashboard then produced
+another applied, provider-delivered `subscription.cancelled` event and retained
+the original trial end. Resubscribing after this cancellation revealed a missing
+dashboard button. The button was fixed, lint and build passed, and Vercel
+deployment `dpl_Hb4gWLCm9N7bVYkyzkJj3pchZEmf` was READY at `app.typein.co`;
+the button was verified in the served page. A second subscription was opened
+to try UPI, then cancelled before authorization, again preserving trial access.
+The Razorpay Checkout exposed only a UPI QR path, not a UPI ID field, so a
+`success@razorpay` VPA could not be entered. The QR test was not completed.
+The final test merchant state is `cancelled`, trial through 11 December, and
+zero monthly payments.
 
 Local validation: 110 backend unit tests passed; 43 database-backed tests
 passed on the disposable Neon branch; dashboard lint and build passed; Ruff
@@ -65,9 +85,9 @@ returned 200, the dashboard returned 200 with the Railway staging API URL in
 its bundle, and the API returned 200 to the `app.typein.co` CORS preflight.
 The staging database revision is `d4c2e6a91b70`.
 
-**Test Mode is not yet complete.** Still verify the webhook's nine selected
-events and delivery history in Razorpay, complete a supported test card and
-UPI Checkout, observe a provider-delivered activation and payment history,
+**Test Mode is not yet complete.** The test card authorization and cancellation
+are provider-backed. Still complete a supported UPI Checkout, observe a
+provider-delivered activation and payment history,
 and exercise failed recurring payment, grace expiry, recovery, paid-cycle
 cancellation, and an existing customer's manage link while the business is
 locked. Where Razorpay Test Mode cannot produce a recurring transition, use
